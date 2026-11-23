@@ -1,6 +1,7 @@
-// Offline support. App files: served from cache, refreshed in the background.
+// Offline support. App files come from the network when online (so a new version shows up on
+// the next load) and from the cache when offline.
 // Timetable data is never cached here; the app keeps its own copy and asks before updating.
-const CACHE = "tokuhen-v8";
+const CACHE = "tokuhen-v9";
 const SHELL = [
   "./",
   "index.html",
@@ -40,14 +41,15 @@ self.addEventListener("fetch", (event) => {
   event.respondWith(
     caches.open(CACHE).then(async (cache) => {
       const key = req.mode === "navigate" ? "index.html" : req;
-      const cached = await cache.match(key, { ignoreSearch: true });
-      const fresh = fetch(req)
-        .then((res) => {
-          if (res.ok) cache.put(key, res.clone());
-          return res;
-        })
-        .catch(() => cached);
-      return cached || fresh;
+      try {
+        // "no-cache" revalidates with the server (cheap 304s) instead of trusting the HTTP cache.
+        const res = await fetch(req, { cache: "no-cache" });
+        if (res.ok) cache.put(key, res.clone());
+        return res;
+      } catch {
+        const cached = await cache.match(key, { ignoreSearch: true });
+        return cached || Response.error();
+      }
     }),
   );
 });

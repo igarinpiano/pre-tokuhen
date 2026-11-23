@@ -488,7 +488,15 @@ $("shortcut-btn").addEventListener("click", openShortcutDialog);
   });
 }
 
-if ("serviceWorker" in navigator && location.protocol === "https:") {
+if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")) {
+  // When a new version of the app takes over an open page, reload once so it runs the new code.
+  const hadController = Boolean(navigator.serviceWorker.controller);
+  let reloading = false;
+  navigator.serviceWorker.addEventListener("controllerchange", () => {
+    if (!hadController || reloading) return;
+    reloading = true;
+    location.reload();
+  });
   navigator.serviceWorker.register("sw.js").catch(() => {});
 }
 
