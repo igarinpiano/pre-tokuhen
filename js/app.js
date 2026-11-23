@@ -98,6 +98,10 @@ function applyData(text, keepPosition = false) {
 async function boot() {
   $("logo").innerHTML = icons.logo(28);
   $("app-title").textContent = t.appTitle;
+  window.addEventListener("resize", fitMasthead);
+  // The web font is wider than the fallback, so measure again once it has loaded.
+  document.fonts?.ready.then(fitMasthead);
+  document.fonts?.addEventListener?.("loadingdone", fitMasthead);
   document.title = t.appTitle;
   readSelection();
 
@@ -479,9 +483,30 @@ function defaultDate() {
   return model.nextEntry(today);
 }
 
+// Keep the title and the date button on one line: when they don't fit, shorten the title
+// (前期特編 時間割 → 前期特編); if even that is too long, the title is cut with an ellipsis.
+function fitMasthead() {
+  // On phones the Shortcut button sits next to the settings button, leaving room for the date.
+  const btn = $("shortcut-btn");
+  const home = phoneLayout.matches ? $("settings-row") : document.querySelector(".masthead-actions");
+  if (btn.parentElement !== home) home.append(btn);
+  const title = $("app-title");
+  const cut = () => title.scrollWidth > title.clientWidth + 1;
+  title.hidden = false;
+  title.textContent = t.appTitle;
+  if (cut()) title.textContent = t.appTitleShort;
+  if (cut()) title.hidden = true; // logo only; the page title still names the site
+}
+const phoneLayout = window.matchMedia("(max-width: 640px), (hover: none) and (pointer: coarse)");
+
+function showDate(date) {
+  $("date-btn").innerHTML = `${icons.calendar(18)}<span>${esc(formatLong(date))}</span>`;
+  fitMasthead();
+}
+
 function setDate(date, { scroll = true } = {}) {
   state.date = date;
-  $("date-btn").innerHTML = `${icons.calendar(18)}<span>${esc(formatLong(date))}</span>`;
+  showDate(date);
   calendar.set(date);
   updateReport();
   if (state.view === "timeline" && timeline) {
@@ -516,7 +541,7 @@ function renderView() {
       const sel = state.date >= a && state.date <= b ? state.date : a;
       if (sel !== state.date) {
         state.date = sel;
-        $("date-btn").innerHTML = `${icons.calendar(18)}<span>${esc(formatLong(sel))}</span>`;
+        showDate(sel);
         calendar.set(sel);
         updateReport();
       }

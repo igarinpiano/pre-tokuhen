@@ -118,8 +118,8 @@ a { color: inherit; }
   display: flex;
   align-items: center;
   justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 10px 12px;
+  gap: 10px;
+  min-width: 0;
 }
 
 .brand {
@@ -135,7 +135,7 @@ a { color: inherit; }
 .brand #logo { display: flex; }
 .brand #app-title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-.masthead-actions { display: flex; align-items: center; gap: 8px; }
+.masthead-actions { display: flex; align-items: center; gap: 8px; flex: none; }
 .date-wrap { position: relative; }
 
 .date-btn {
@@ -879,6 +879,7 @@ html.tl-page-scroll .tl-grid {
 /* ---------- Settings button (phones) ---------- */
 
 .settings-chip { display: none; }
+.settings-row { display: none; }
 .settings-panel { display: grid; gap: 12px; }
 
 @media (max-width: 640px), (hover: none) and (pointer: coarse) {
@@ -896,6 +897,10 @@ html.tl-page-scroll .tl-grid {
     font-size: 15px;
     font-weight: 700;
   }
+  .settings-row { display: flex; align-items: center; gap: 8px; min-width: 0; }
+  .settings-row:not(:has(> :not([hidden]))) { display: none; }
+  .settings-row .settings-chip { min-width: 0; }
+  .settings-row .shortcut-btn { flex: none; width: 40px; height: 40px; }
   .settings-chip-text { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
   .settings-chip .icon:last-child { color: var(--muted); transition: transform 0.15s; }
   .settings-chip[aria-expanded="true"] .icon:last-child { transform: rotate(180deg); }
