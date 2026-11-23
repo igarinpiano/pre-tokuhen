@@ -36,16 +36,40 @@ export function daysBetween(a, b) {
   return Math.round((parseISO(b) - parseISO(a)) / 86400000);
 }
 
-// Follow the user's calendar setting (e.g. the Japanese imperial calendar on iOS),
-// but keep the UI language for month and weekday names.
-function buildLocale() {
-  let calendar = "gregory";
+// Dates follow the device's calendar where the browser exposes it (e.g. Chrome),
+// otherwise the calendar the user picked in the date picker or with ?cal=.
+// Safari does not expose the system calendar, so iPhone users pick it once.
+const CALENDARS = ["gregory", "japanese"];
+
+function detectCalendar() {
   try {
     const c = new Intl.DateTimeFormat().resolvedOptions().calendar;
-    if (c === "japanese") calendar = "japanese";
+    return c === "japanese" ? "japanese" : "gregory";
   } catch {
-    /* keep gregory */
+    return "gregory";
   }
+}
+
+function initialCalendar() {
+  const param = (new URLSearchParams(location.search).get("cal") || "").toLowerCase();
+  if (CALENDARS.includes(param)) {
+    try {
+      localStorage.setItem("tt:cal", param);
+    } catch {
+      /* storage unavailable */
+    }
+    return param;
+  }
+  let stored = null;
+  try {
+    stored = localStorage.getItem("tt:cal");
+  } catch {
+    /* storage unavailable */
+  }
+  return CALENDARS.includes(stored) ? stored : detectCalendar();
+}
+
+function buildLocale(calendar) {
   const sys = (navigator.languages && navigator.languages[0]) || navigator.language || "";
   const base = sys.toLowerCase().startsWith(lang) ? sys : lang === "ja" ? "ja-JP" : "en-US";
   try {
@@ -55,8 +79,25 @@ function buildLocale() {
   }
 }
 
-const locale = buildLocale();
+export const detectedCalendar = detectCalendar();
+let calendar = initialCalendar();
+let locale = buildLocale(calendar);
 const fmtCache = new Map();
+
+export const getCalendar = () => calendar;
+
+export function setCalendar(next) {
+  if (!CALENDARS.includes(next)) return;
+  calendar = next;
+  locale = buildLocale(next);
+  fmtCache.clear();
+  try {
+    localStorage.setItem("tt:cal", next);
+  } catch {
+    /* storage unavailable */
+  }
+}
+
 function fmt(options) {
   const key = JSON.stringify(options);
   if (!fmtCache.has(key)) fmtCache.set(key, new Intl.DateTimeFormat(locale, options));
