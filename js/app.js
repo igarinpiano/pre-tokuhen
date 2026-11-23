@@ -112,8 +112,16 @@ async function boot() {
       return;
     }
   }
+  // A page left open overnight (or a Home Screen app resumed the next morning) jumps to the new day.
+  let shownToday = todayISO();
   document.addEventListener("visibilitychange", () => {
-    if (document.visibilityState === "visible" && Date.now() - lastCheck > 5 * 60 * 1000) checkForUpdate();
+    if (document.visibilityState !== "visible") return;
+    if (Date.now() - lastCheck > 5 * 60 * 1000) checkForUpdate();
+    if (model && todayISO() !== shownToday) {
+      shownToday = todayISO();
+      state.date = defaultDate();
+      build();
+    }
   });
   if (!navigator.onLine && cached) showBanner(t.offline);
 }
