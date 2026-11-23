@@ -26,6 +26,8 @@ export const icons = {
       <rect x="6.5" y="9.3" width="11" height="11" rx="3" transform="rotate(45 12 14.8)" fill="currentColor" opacity=".38"/>
       <rect x="6.5" y="3.7" width="11" height="11" rx="3" transform="rotate(45 12 9.2)" fill="currentColor"/>
     </svg>`,
+  print: (s) =>
+    svg(`<path d="M7 8.5V3.5h10v5"/><rect x="3.5" y="8.5" width="17" height="8.5" rx="2.5"/><path d="M7 14h10v6.5H7z"/><path d="M16.5 11.5h.01"/>`, s),
   flag: (s) => svg(`<path d="M5 21V4.5M5 4.5h11l-2 4 2 4H5"/>`, s),
   link: (s) =>
     svg(`<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/>`, s),

@@ -837,3 +837,37 @@ html.tl-page-scroll .tl-grid {
   .view-head .stepper { display: none; }
   body { padding-bottom: calc(env(safe-area-inset-bottom) + 96px); }
 }
+
+/* ---------- Past days ---------- */
+
+.tl-cell.is-past, .tl-event.is-past,
+.wk-cell.is-past, .wk-event.is-past, .wk-off.is-past { opacity: 0.42; }
+.tl-date.is-past, .wk-date.is-past, .cal-day.is-past { color: var(--muted); }
+.day-body.is-past { opacity: 0.5; }
+
+/* ---------- Printing ---------- */
+
+.view-actions { display: flex; align-items: center; gap: 6px; flex: none; }
+.print-range { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+.primary-btn { display: inline-flex; align-items: center; gap: 8px; border: 0; font: inherit; cursor: pointer; }
+
+#print-area { display: none; }
+
+@media print {
+  body > *:not(#print-area) { display: none !important; }
+  body { padding: 0 !important; background: #fff; }
+  #print-area { display: block; }
+  #print-area * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .print-head { display: flex; justify-content: space-between; gap: 16px; font-size: 12px; margin-bottom: 6px; }
+  .print-page { padding: 0; break-after: page; }
+  .print-page:last-child { break-after: auto; }
+  .print-day { padding: 0; break-inside: avoid; margin-bottom: 12px; }
+  #print-area .view-actions, #print-area .today-pill { display: none; }
+  #print-area .view-head { margin: 0 0 8px; }
+  #print-area .wk-scroll { overflow: visible; }
+  #print-area .wk-colbg.is-selected { background: none; box-shadow: none; }
+  #print-area .wk-date.is-selected { border-bottom-color: var(--line); }
+  #print-area .is-past { opacity: 1; color: inherit; }
+  #print-area .day-list { max-width: none; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
+  #print-area .day-slot { min-height: 0; padding: 8px 12px; }
+}
