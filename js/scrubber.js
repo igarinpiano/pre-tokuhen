@@ -121,9 +121,19 @@ export function createScrubber(root, { model, days, onPick }) {
     });
   });
   root.addEventListener("pointerdown", (e) => {
+    // Keyboard tools such as Vimium send synthetic clicks without a position.
+    // Focus the strip instead, so the arrow keys move through the days.
+    if (!e.isTrusted || !(e instanceof PointerEvent)) {
+      root.focus();
+      return;
+    }
     dragging = true;
     lastPicked = null;
-    root.setPointerCapture(e.pointerId);
+    try {
+      root.setPointerCapture(e.pointerId);
+    } catch {
+      /* capture is optional */
+    }
     pickAt(e.clientX);
   });
   const end = () => {

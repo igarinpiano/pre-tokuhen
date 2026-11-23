@@ -730,7 +730,9 @@ button.cal-day:hover { background: var(--surface); }
 .sheet p { margin: 10px 0 0; font-size: 14px; }
 .kv { display: grid; grid-template-columns: max-content 1fr; gap: 4px 16px; margin: 0; font-size: 14px; }
 .kv dd { margin: 0; }
-.url { overflow-wrap: anywhere; font-size: 13px; }
+.url { overflow-wrap: anywhere; font-size: 13px; user-select: all; -webkit-user-select: all; }
+.url-row { display: flex; align-items: center; gap: 10px; margin-top: 6px; }
+.url-row .url { flex: 1; min-width: 0; }
 .sheet-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 20px; }
 .primary-btn {
   display: inline-block;
