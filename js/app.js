@@ -1,4 +1,4 @@
-import { lang, t } from "./i18n.js";
+import { forcedLang, lang, t } from "./i18n.js";
 import { config } from "./config.js";
 import { icons } from "./icons.js";
 import { Model } from "./model.js";
@@ -149,8 +149,7 @@ function queryString() {
   for (const k of model.electivesFor(state.sel.division)) {
     if (state.sel.electives[k]) p.set(k, state.sel.electives[k]);
   }
-  const forced = new URLSearchParams(location.search).get("lang");
-  if (forced) p.set("lang", forced);
+  if (forcedLang) p.set("lang", forcedLang);
   return p.toString();
 }
 
