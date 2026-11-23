@@ -440,6 +440,34 @@ button.cal-day:hover { background: var(--surface); }
 }
 .tl-grid { display: grid; width: max-content; position: relative; }
 
+/* Mouse and trackpad: the page scrolls sideways instead of an inner box (see renderTimeline).
+   Body grows to the timeline's width; the header, footer and view heading stay pinned. */
+html.tl-page-scroll { overscroll-behavior-x: none; }
+html.tl-page-scroll body { width: max-content; min-width: 100%; }
+html.tl-page-scroll .masthead,
+html.tl-page-scroll .foot {
+  position: sticky;
+  left: 0;
+  width: var(--vw, 100vw);
+}
+/* Sticky elements form their own stacking layer; keep the header (and its date picker) on top. */
+html.tl-page-scroll .masthead { z-index: 20; }
+html.tl-page-scroll .view-timeline .view-head {
+  position: sticky;
+  left: 20px;
+  width: calc(var(--vw, 100vw) - 40px);
+}
+html.tl-page-scroll .tl-scroll {
+  overflow: visible;
+  border: 0;
+  border-radius: 0;
+}
+html.tl-page-scroll .tl-grid {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  overflow: clip;
+}
+
 .tl-corner, .tl-label {
   position: sticky;
   left: 0;

@@ -178,14 +178,30 @@ export function renderTimeline(root, ctx) {
     if (h) ctx.onOpenDay(h.dataset.date);
   });
 
-  const labelWidth = () => root.querySelector(".tl-label")?.offsetWidth || 0;
+  // With a mouse or trackpad the page itself scrolls sideways (header and subject column stay
+  // put). Keyboard tools such as Vimium only scroll the page or vertical scroll areas, so this
+  // is what makes their h/l keys move the timeline. Touch screens keep an inner scroll area.
+  const pageScroll = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+  const docEl = document.documentElement;
+  docEl.classList.toggle("tl-page-scroll", pageScroll);
+  const setViewportWidth = () => docEl.style.setProperty("--vw", `${docEl.clientWidth}px`);
+  if (pageScroll) setViewportWidth();
+
+  const pos = {
+    left: () => (pageScroll ? window.scrollX : scroller.scrollLeft),
+    width: () => (pageScroll ? docEl.clientWidth : scroller.clientWidth),
+    max: () => (pageScroll ? docEl.scrollWidth : scroller.scrollWidth),
+    right: () => (pageScroll ? docEl.clientWidth : scroller.getBoundingClientRect().right),
+    by: (dx, smooth) => (pageScroll ? window : scroller).scrollBy({ left: dx, behavior: smooth ? "smooth" : "auto" }),
+  };
+  const labelRight = () => root.querySelector(".tl-label")?.getBoundingClientRect().right || 0;
 
   let raf = 0;
   const rangeTitle = root.querySelector(".tl-range");
   const prevBtn = root.querySelector('[data-step="-1"]');
   const nextBtn = root.querySelector('[data-step="1"]');
   let firstVisible = model.first;
-  // Week steps, so the timeline can be moved with buttons (and keyboard tools like Vimium).
+  // Week steps, so the timeline can also be moved with buttons.
   root.querySelector(".stepper").addEventListener("click", (e) => {
     const b = e.target.closest("[data-step]");
     if (!b) return;
@@ -198,35 +214,51 @@ export function renderTimeline(root, ctx) {
   });
 
   const report = () => {
-    const left = scroller.scrollLeft + labelWidth();
-    const right = scroller.scrollLeft + scroller.clientWidth;
-    const visible = headers.filter((h) => h.offsetLeft + h.offsetWidth * 0.5 >= left && h.offsetLeft + h.offsetWidth * 0.5 <= right);
+    const left = labelRight();
+    const right = pos.right();
+    const visible = headers.filter((h) => {
+      const r = h.getBoundingClientRect();
+      const mid = r.left + r.width / 2;
+      return mid >= left && mid <= right;
+    });
     if (!visible.length) return;
     const a = visible[0].dataset.date;
     const b = visible[visible.length - 1].dataset.date;
     firstVisible = a;
     rangeTitle.textContent = a === b ? formatMedium(a) : `${formatMedium(a)} – ${formatMedium(b)}`;
-    prevBtn.disabled = scroller.scrollLeft <= 0;
-    nextBtn.disabled = scroller.scrollLeft + scroller.clientWidth >= scroller.scrollWidth - 1;
+    prevBtn.disabled = pos.left() <= 0;
+    nextBtn.disabled = pos.left() + pos.width() >= pos.max() - 1;
     ctx.onVisibleRange(a, b);
   };
-  scroller.addEventListener("scroll", () => {
+  const onScroll = () => {
     cancelAnimationFrame(raf);
     raf = requestAnimationFrame(report);
-  });
-  const ro = new ResizeObserver(report);
+  };
+  const scrollTarget = pageScroll ? window : scroller;
+  scrollTarget.addEventListener("scroll", onScroll, { passive: true });
+  const onResize = () => {
+    if (pageScroll) setViewportWidth();
+    onScroll();
+  };
+  window.addEventListener("resize", onResize);
+  const ro = new ResizeObserver(onScroll);
   ro.observe(scroller);
 
   return {
     scrollTo(date, smooth = false) {
       const h = headers.find((x) => x.dataset.date >= date) || headers[headers.length - 1];
       if (!h) return;
-      const target = Math.max(0, h.offsetLeft - labelWidth());
-      scroller.scrollTo({ left: target, behavior: smooth ? "smooth" : "auto" });
+      pos.by(h.getBoundingClientRect().left - labelRight(), smooth);
       requestAnimationFrame(report);
     },
     destroy() {
       ro.disconnect();
+      scrollTarget.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onResize);
+      if (pageScroll) {
+        docEl.classList.remove("tl-page-scroll");
+        window.scrollTo({ left: 0, top: window.scrollY });
+      }
     },
   };
 }
