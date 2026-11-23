@@ -2,7 +2,7 @@ import { forcedLang, lang, t } from "./i18n.js";
 import { config } from "./config.js";
 import { icons } from "./icons.js";
 import { Model } from "./model.js";
-import { addDays, detectedCalendar, formatLong, formatUpdated, getCalendar, setCalendar, todayISO } from "./format.js";
+import { addDays, mondayOf, detectedCalendar, formatLong, formatUpdated, getCalendar, setCalendar, todayISO } from "./format.js";
 import { createScrubber } from "./scrubber.js";
 import { createCalendar } from "./calendar.js";
 import { esc, renderDay, renderTimeline, renderWeek } from "./views.js";
@@ -368,10 +368,18 @@ function setDate(date, { scroll = true } = {}) {
   calendar.set(date);
   updateReport();
   if (state.view === "timeline" && timeline) {
+    timeline.mark(date);
     if (scroll) timeline.scrollTo(date, true);
   } else {
     renderView();
   }
+}
+
+function openDay(date) {
+  state.view = "day";
+  store.set("tt:view", "day");
+  renderTabs();
+  setDate(date);
 }
 
 function renderView() {
@@ -385,12 +393,7 @@ function renderView() {
     sel: state.sel,
     date: state.date,
     onSelect: (d) => setDate(d),
-    onOpenDay: (d) => {
-      state.view = "day";
-      store.set("tt:view", "day");
-      renderTabs();
-      setDate(d);
-    },
+    onOpenDay: (d) => openDay(d),
     onVisibleRange: (a, b) => {
       const sel = state.date >= a && state.date <= b ? state.date : a;
       if (sel !== state.date) {
@@ -400,10 +403,12 @@ function renderView() {
         updateReport();
       }
       scrubber.setRange(a, b, sel);
+      timeline?.mark(sel);
     },
   };
   if (state.view === "timeline") {
     timeline = renderTimeline(root, ctx);
+    timeline.mark?.(state.date);
     if (state.sel.class && state.sel.division) timeline.scrollTo(state.date);
     else scrubber.setRange(state.date, state.date, state.date);
   } else if (state.view === "week") {
@@ -471,6 +476,30 @@ $("view-tabs").addEventListener("keydown", (e) => {
   $("view-tabs").querySelector(`[data-view="${next}"]`).focus();
 });
 $("shortcut-btn").addEventListener("click", openShortcutDialog);
+
+// Keyboard: ← → move by a school day (Shift: a week) in every view; Return opens the day view
+// from the week or timeline. Keys typed into controls with their own arrow handling are left alone.
+document.addEventListener("keydown", (e) => {
+  if (!model || !state.date || e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey) return;
+  const target = e.target instanceof Element ? e.target : document.body;
+  if (target.closest("input, select, textarea, [contenteditable], #scrubber, #view-tabs, #calendar, dialog")) return;
+  if ($("shortcut-dialog").open || !$("calendar").hidden) return;
+
+  if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
+    if (state.view === "timeline" && !(state.sel.class && state.sel.division)) return;
+    e.preventDefault();
+    const dir = e.key === "ArrowRight" ? 1 : -1;
+    let next = model.stepEntry(state.date, dir);
+    if (e.shiftKey) {
+      const mon = mondayOf(state.date);
+      next = dir > 0 ? model.nextEntry(addDays(mon, 7)) : model.nextEntry(mondayOf(model.prevEntry(addDays(mon, -1))));
+    }
+    setDate(next);
+  } else if (e.key === "Enter" && state.view !== "day" && !target.closest("button, a")) {
+    e.preventDefault();
+    openDay(state.date);
+  }
+});
 // Close the dialog only when a press both starts and ends on the backdrop. A text selection
 // that is dragged and released over the dialog's own padding also targets the dialog element.
 {
@@ -501,4 +530,8 @@ if ("serviceWorker" in navigator && (location.protocol === "https:" || location.
 }
 
 document.documentElement.dataset.lang = lang;
+// iPhone/iPad Safari (not the Home Screen app) draws its toolbar over the bottom of the page.
+if (/iPhone|iPad|iPod/.test(navigator.userAgent) || (/Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1)) {
+  if (!isStandalone) document.documentElement.classList.add("ios-browser");
+}
 boot();
