@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>個人時間割表</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+    background: #F8FAFC;
+    color: #0F172A;
+    font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Noto Sans JP", "Noto Sans CJK JP", sans-serif;
+    -webkit-text-size-adjust: 100%;
+  }
+  .container {
+    width: 100%;
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 12px 10px 32px;
+  }
+
+  /* Header & Controls */
+  .top-bar {
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    border-radius: 14px;
+    padding: 12px 14px;
+    margin-bottom: 10px;
+  }
+  .title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+  }
+  .title-row h1 {
+    font-size: 18px;
+    font-weight: 700;
+  }
+  .subtitle {
+    font-size: 11px;
+    color: #64748B;
+  }
+  .controls {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+  .ctrl-box {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+  }
+  .ctrl-box label {
+    font-size: 11px;
+    font-weight: 600;
+    color: #64748B;
+  }
+  .ctrl-box select {
+    width: 100%;
+    min-width: 0;
+    height: 36px;
+    padding: 0 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #0F172A;
+    background: #F8FAFC;
+    border: 1px solid #CBD5E1;
+    border-radius: 8px;
+    outline: none;
+  }
+  .ctrl-box select:focus {
+    border-color: #2563EB;
+    background: #FFFFFF;
+  }
+  .meta-line {
+    margin-top: 8px;
+    font-size: 11px;
+    color: #475569;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 12px;
+  }
+  .dot-lbl {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    white-space: nowrap;
+  }
+  .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 2px;
+    display: inline-block;
+    flex-shrink: 0;
+  }
+
+  /* Week filter pills */
+  .week-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+  .w-tab {
+    border: 1px solid #E2E8F0;
+    background: #FFFFFF;
+    color: #475569;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 5px 11px;
+    border-radius: 999px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .w-tab.active {
+    background: #0F172A;
+    color: #FFFFFF;
+    border-color: #0F172A;
+  }
+
+  /* Week Card */
+  .week-card {
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    border-radius: 14px;
+    margin-bottom: 12px;
+    overflow: hidden;
+  }
+  .week-hdr {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 12px;
+    background: #F1F5F9;
+    border-bottom: 1px solid #E2E8F0;
+  }
+  .w-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #0F172A;
+  }
+  .w-range {
+    font-size: 11px;
+    color: #64748B;
+    white-space: nowrap;
+  }
+
+  /* Vertical Timetable Grid: col 1 = period axis, cols 2..6 = Mon..Fri */
+  .tt-grid {
+    display: grid;
+    grid-template-columns: 32px repeat(5, minmax(0, 1fr));
+    grid-template-rows: auto repeat(6, minmax(52px, auto));
+    width: 100%;
+    background: #E2E8F0;
+    gap: 1px;
+  }
+  .tt-corner {
+    background: #F8FAFC;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 700;
+    color: #64748B;
+    padding: 6px 2px;
+  }
+  .tt-day-hdr {
+    background: #F8FAFC;
+    text-align: center;
+    padding: 5px 2px;
+    min-width: 0;
+  }
+  .tt-day-date {
+    font-size: 11px;
+    font-weight: 700;
+    color: #0F172A;
+    line-height: 1.2;
+  }
+  .tt-day-dow {
+    font-size: 10px;
+    color: #64748B;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+  }
+  .day-tag {
+    background: #DC2626;
+    color: #FFFFFF;
+    font-size: 9px;
+    font-weight: 700;
+    padding: 0 3px;
+    border-radius: 3px;
+    line-height: 1.3;
+  }
+  .tt-p-hdr {
+    background: #F8FAFC;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    color: #475569;
+    padding: 4px 2px;
+  }
+  .tt-cell {
+    background: #FFFFFF;
+    padding: 5px 4px;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    gap: 2px;
+    position: relative;
+  }
+  .tt-cell.empty {
+    background: #F8FAFC;
+  }
+  .tt-cell.is-class {
+    background: #EFF6FF;
+  }
+  .tt-cell.is-course {
+    background: #ECFDF5;
+  }
+  .tt-cell.is-lhr {
+    background: #F1F5F9;
+  }
+  .tt-cell.is-exam {
+    background: #FFFBEB;
+  }
+  .tt-cell.changed {
+    background: #FEF2F2;
+    outline: 2px solid #DC2626;
+    outline-offset: -2px;
+  }
+  .c-subj {
+    font-size: 12px;
+    font-weight: 700;
+    color: #0F172A;
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+  .c-room {
+    font-size: 10px;
+    color: #64748B;
+    line-height: 1.1;
+  }
+  .c-time {
+    font-size: 9px;
+    font-weight: 700;
+    color: #DC2626;
+    line-height: 1.1;
+  }
+  .c-chg {
+    font-size: 9px;
+    font-weight: 700;
+    color: #FFFFFF;
+    background: #DC2626;
+    padding: 0 4px;
+    border-radius: 3px;
+    line-height: 1.3;
+  }
+  .c-note {
+    font-size: 10px;
+    color: #475569;
+    line-height: 1.3;
+    overflow-wrap: anywhere;
+  }
+
+  /* Post-week events (共通テスト・自己採点) */
+  .after-list {
+    border-top: 1px solid #E2E8F0;
+  }
+  .after-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    border-bottom: 1px solid #F1F5F9;
+    background: #FEF2F2;
+  }
+  .after-row.selfcheck {
+    background: #EFF6FF;
+  }
+  .after-row:last-child { border-bottom: none; }
+  .after-date {
+    width: 48px;
+    flex-shrink: 0;
+    font-size: 12px;
+    font-weight: 700;
+    color: #0F172A;
+    text-align: center;
+  }
+  .after-body {
+    flex: 1;
+    min-width: 0;
+  }
+  .after-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #0F172A;
+  }
+  .after-note {
+    font-size: 11px;
+    color: #475569;
+    margin-top: 1px;
+    overflow-wrap: anywhere;
+  }
+
+  .footer-note {
+    font-size: 11px;
+    color: #64748B;
+    text-align: center;
+    margin-top: 8px;
+    line-height: 1.5;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <header class="top-bar">
+    <div class="title-row">
+      <h1>個人時間割表</h1>
+      <span class="subtitle">令和8年度 3学年前期特編（11/30〜1/18）</span>
+    </div>
+    <div class="controls">
+      <div class="ctrl-box">
+        <label for="classSelect">クラス（120分枠・LHR）</label>
+        <select id="classSelect">
+          <option value="0">1組（231）</option>
+          <option value="1" selected>2組（233）</option>
+          <option value="2">3組（234）</option>
+          <option value="3">4組（245）</option>
+          <option value="4">5組（244）</option>
+          <option value="5">6組（243）</option>
+          <option value="6">7組（242）</option>
+          <option value="7">8組（241）</option>
+        </select>
+      </div>
+      <div class="ctrl-box">
+        <label for="courseSelect">講座（55分枠）</label>
+        <select id="courseSelect">
+          <option value="0">A（231）</option>
+          <option value="1">B（233）</option>
+          <option value="2">C（234）</option>
+          <option value="3">O（245）</option>
+          <option value="4">N（244）</option>
+          <option value="5" selected>M（243）</option>
+          <option value="6">L（242）</option>
+          <option value="7">K（241）</option>
+        </select>
+      </div>
+    </div>
+    <div class="meta-line">
+      <span class="dot-lbl"><span class="dot" style="background:#BFDBFE;"></span>クラス授業（2時間連続）</span>
+      <span class="dot-lbl"><span class="dot" style="background:#A7F3D0;"></span>講座授業（1時間）</span>
+      <span class="dot-lbl"><span class="dot" style="background:#DC2626;"></span>赤枠＝通常から変更</span>
+    </div>
+  </header>
+
+  <nav class="week-tabs" id="weekTabs" aria-label="週フィルター">
+    <button class="w-tab active" data-week="all">すべて</button>
+    <button class="w-tab" data-week="0">第1週</button>
+    <button class="w-tab" data-week="1">第2週</button>
+    <button class="w-tab" data-week="2">第3週</button>
+    <button class="w-tab" data-week="3">第4週</button>
+    <button class="w-tab" data-week="4">第5週</button>
+    <button class="w-tab" data-week="5">最終週</button>
+  </nav>
+
+  <main id="scheduleRoot"></main>
+
+  <p class="footer-note">※ 1/8(金)④⑤の開始時刻は原表の時刻欄が空欄（③13:45〜／⑥14:50〜）。<br>※ 体育・社会・理科基礎の合同講座は講座枠の表記をそのまま表示しています。</p>
+</div>
+
+<script>
+const ROOMS = ["231", "233", "234", "245", "244", "243", "242", "241"];
+
+const COURSE_BASE = {
+  mon1: ["理基AB：化, 生, 地", "理基AB：化, 生, 地", "地理", "物理", "化学", "物理", "化学", "化学"],
+  mon4: ["社ABN", "社ABN", "生物基礎", "化学", "社ABN", "化学", "物理", "物理"],
+  tue1: ["日本史", "理基BC：生, 地", "理基BC：生, 地", "地理/政経", "化学", "地理", "化学", "化学"],
+  tue4: ["体AMO", "社BCKL", "社BCKL", "体AMO", "生物", "体AMO", "社BCKL", "社BCKL"],
+  wed3: ["情報", "情報", "体CKN", "物理", "体CKN", "地理", "情報", "体CKN"],
+  wed4: ["日本史", "理基BC：生, 地", "理基BC：生, 地", "情報", "情報", "化学", "物理", "物理"],
+  wed5: ["社ABN", "社ABN", "生物基礎", "化学", "社ABN", "物理", "化学", "化学"],
+  wed6: ["地学基礎", "体BL", "情報", "地理/政経", "生物", "情報", "体BL", "情報"],
+  thu1: ["自習", "社BCKL", "社BCKL", "物理", "化学", "物理", "社BCKL", "社BCKL"],
+  thu4: ["日本史", "自習", "地理", "化学", "生物", "化学", "物理", "物理"],
+  fri1: ["社ABN", "社ABN", "情報", "化学", "社ABN", "情報", "物理", "情報"],
+  fri2: ["情報", "情報", "自習", "地理/政経", "化学", "地理", "情報", "物理"],
+  fri3: ["理基AB：化, 生, 地", "理基AB：化, 生, 地", "地理", "情報", "情報", "物理", "化学", "化学"],
+  fri6: ["地学基礎", "社BCKL", "社BCKL", "物理", "生物", "化学", "社BCKL", "社BCKL"],
+};
+
+// Each slot has start (1..6) and span (1, 2, or 6)
+const WEEKS = [
+  {
+    title: "第1週", range: "11/30〜12/4",
+    days: [
+      { d: "11/30", dow: "月", slots: [
+        { s: 1, span: 1, type: "course", data: COURSE_BASE.mon1 },
+        { s: 2, span: 2, type: "class",  data: ["国語","国語","英語","英語","英語","数①","数①","数①"] },
+        { s: 4, span: 1, type: "course", data: COURSE_BASE.mon4 },
+        { s: 5, span: 2, type: "class",  data: ["数①","数①","数①","国語","国語","英語","英語","英語"] },
+      ]},
+      { d: "12/1", dow: "火", slots: [
+        { s: 1, span: 1, type: "course", data: COURSE_BASE.tue1 },
+        { s: 2, span: 2, type: "class",  data: ["英語","英語","英語","数①","数①","数②","国語","国語"] },
+        { s: 4, span: 1, type: "course", data: COURSE_BASE.tue4 },
+        { s: 5, span: 2, type: "class",  data: ["国語","数②","国語","英語","英語","英語","数②","数②"] },
+      ]},
+      { d: "12/2", dow: "水", slots: [
+        { s: 1, span: 2, type: "class",  data: ["数②","数①","数②","国語","国語","国語","英語","英語"] },
+        { s: 3, span: 1, type: "course", data: COURSE_BASE.wed3 },
+        { s: 4, span: 1, type: "course", data: COURSE_BASE.wed4 },
+        { s: 5, span: 1, type: "course", data: COURSE_BASE.wed5 },
+        { s: 6, span: 1, type: "course", data: COURSE_BASE.wed6 },
+      ]},
+      { d: "12/3", dow: "木", slots: [
+        { s: 1, span: 1, type: "course", data: COURSE_BASE.thu1 },
+        { s: 2, span: 2, type: "class",  data: ["英語","英語","英語","数②","数②","数①","国語","国語"] },
+        { s: 4, span: 1, type: "course", data: COURSE_BASE.thu4 },
+        { s: 5, span: 2, type: "class",  data: ["国語","国語","数①","英語","英語","英語","数①","数①"] },
+      ]},
+      { d: "12/4", dow: "金", slots: [
+        { s: 1, span: 1, type: "course", data: COURSE_BASE.fri1 },
+        { s: 2, span: 1, type: "course", data: COURSE_BASE.fri2 },
+        { s: 3, span: 1, type: "course", data: COURSE_BASE.fri3 },
+        { s: 4, span: 2, type: "class",  data: ["数①","国語","国語","数①","数①","国語","英語","英語"] },
+        { s: 6, span: 1, type: "course", data: COURSE_BASE.fri6 },
+      ]},
+    ]
+  },
+  {
+    title: "第2週", range: "12/7〜12/11",
+    days: [
+      { d: "12/7", dow: "月", slots: [
+        { s: 1, span: 1, type: "course", data: COURSE_BASE.mon1 },
+        { s: 2, span: 2, type: "class",  data: ["英語","英語","英語","数②","数②","数②","国語","国語"] },
+        { s: 4, span: 1, type: "course", data: COURSE_BASE.mon4 },
+        { s: 5, span: 2, type: "class",  data: ["国語","国語","国語","英語","英語","英語","数②","数②"] },
+      ]},
+      { d: "12/8", dow: "火", tag: "A特", slots: [
+        { s: 1, span: 2, type: "class",  data: ["数②","数②","数②","国語","国語","国語","英語","英語"] },
+        { s: 3, span: 1, type: "lhr" },
+        { s: 4, span: 1, type: "course", data: COURSE_BASE.tue4 },
+        { s: 5, span: 2, type: "class",  data: ["英語","英語","英語","数①","数①","数①","国語","国語"] },
+      ]},
+      { d: "12/9", dow: "水", slots: [
+        { s: 1, span: 2, type: "class",  data: ["国語","英語","国語","英語","英語","国語","数①","数①"] },
+        { s: 3, span: 1, type: "course", data: COURSE_BASE.wed3 },
+        { s: 4, span: 1, type: "course", data: COURSE_BASE.wed4 },
+        { s: 5, span: 1, type: "course", data: COURSE_BASE.wed5 },
+        { s: 6, span: 1, type: "course", data: COURSE_BASE.wed6 },
+      ]},
+      { d: "12/10", dow: "木", slots: [
+        { s: 1, span: 1, type: "course", data: COURSE_BASE.thu1 },
+        { s: 2, span: 2, type: "class",  data: ["数①","数①","数①","国語","国語","英語","英語","英語"] },
+        { s: 4, span: 1, type: "course", data: COURSE_BASE.thu4 },
+        { s: 5, span: 2, type: "class",  data: ["英語","英語","英語","数②","数②","数②","国語","国語"] },
+      ]},
+      { d: "12/11", dow: "金", slots: [
+        { s: 1, span: 1, type: "course", data: COURSE_BASE.fri1 },
+        { s: 2, span: 1, type: "course", data: COURSE_BASE.fri2 },
+        { s: 3, span: 1, type: "course", data: COURSE_BASE.fri3 },
+        { s: 4, span: 2, type: "class",  data: ["国語","国語","国語","英語","英語","英語","数②","数②"] },
+        { s: 6, span: 1, type: "course", data: COURSE_BASE.fri6 },
+      ]},
+    ]
+  },
+  {
+    title: "第3週", range: "12/14〜12/18",
+    days: [
+      { d: "12/14", dow: "月", slots: [
+        { s: 1, span: 1, type: "course", data: COURSE_BASE.mon1 },
+        { s: 2, span: 2, type: "class",  data: ["数②","数②","数②","国語","国語","国語","英語","英語"] },
+        { s: 4, span: 1, type: "course", data: COURSE_BASE.mon4 },
+        { s: 5, span: 2, type: "class",  data: ["英語","英語","英語","数①","数①","数①","国語","国語"] },
+      ]},
+      { d: "12/15", dow: "火", slots: [
+        { s: 1, span: 1, type: "course", data: COURSE_BASE.tue1 },
+        { s: 2, span: 2, type: "class",  data: ["国語","国語","国語","英語","英語","英語","数①","数①"] },
+        { s: 4, span: 1, type: "course", data: COURSE_BASE.tue4 },
+        { s: 5, span: 2, type: "class",  data: ["数①","数①","数①","国語","国語","国語","英語","英語"] },
+      ]},
+      { d: "12/16", dow: "水", slots: [
+        { s: 1, span: 2, type: "class",  data: ["英語","英語","英語","数②","数②","数②","国語","国語"] },
+        { s: 3, span: 1, type: "course", data: COURSE_BASE.wed3 },
+        { s: 4, span: 1, type: "course", data: COURSE_BASE.wed4 },
+        { s: 5, span: 1, type: "course", data: COURSE_BASE.wed5 },
+        { s: 6, span: 1, type: "course", data: COURSE_BASE.wed6 },
+      ]},
+      { d: "12/17", dow: "木", slots: [
+        { s: 1, span: 1, type: "course", data: COURSE_BASE.thu1 },
+        { s: 2, span: 2, type: "class",  data: ["数②","国語","国語","英語","英語","英語","数②","数②"] },
+        { s: 4, span: 1, type: "course", data: COURSE_BASE.thu4 },
+        { s: 5, span: 2, type: "class",  data: ["英語","数②","数②","国語","国語","国語","英語","英語"] },
+      ]},
+      { d: "12/18", dow: "金", tag: "P特", slots: [
+        { s: 1, span: 1, type: "course", data: COURSE_BASE.fri1 },
+        { s: 2, span: 1, type: "course", data: COURSE_BASE.fri2 },
+        { s: 3, span: 1, type: "course", data: COURSE_BASE.fri3 },
+        { s: 4, span: 2, type: "class",  data: ["英語","英語","英語","数①","数①","数①","国語","国語"] },
+        { s: 6, span: 1, type: "lhr" },
+      ]},
+    ]
+  },
+  {
+    title: "第4週", range: "12/21〜12/25",
+    days: [
+      { d: "12/21", dow: "月", slots: [
+        { s: 1, span: 1, type: "course", data: COURSE_BASE.mon1 },
+        { s: 2, span: 2, type: "class",  data: ["国語","国語","国語","英語","英語","英語","数①","数①"] },
+        { s: 4, span: 1, type: "course", data: COURSE_BASE.mon4 },
+        { s: 5, span: 2, type: "class",  data: ["数①","数①","数①","国語","国語","国語","英語","英語"] },
+      ]},
+      { d: "12/22", dow: "火", slots: [
+        { s: 1, span: 1, type: "course", data: COURSE_BASE.tue1 },
+        { s: 2, span: 2, type: "class",  data: ["英語","英語","英語","数②","数②","数②","国語","国語"] },
+        { s: 4, span: 1, type: "course", data: COURSE_BASE.tue4 },
+        { s: 5, span: 2, type: "class",  data: ["国語","国語","国語","英語","英語","英語","数②","数②"] },
+      ]},
+      { d: "12/23", dow: "水", slots: [
+        { s: 1, span: 2, type: "class",  data: ["数②","数②","数②","国語","国語","国語","英語","英語"] },
+        { s: 3, span: 1, type: "course", data: COURSE_BASE.wed3 },
+        { s: 4, span: 1, type: "course", data: COURSE_BASE.wed4 },
+        { s: 5, span: 1, type: "course", data: COURSE_BASE.wed5 },
+        { s: 6, span: 1, type: "course", data: COURSE_BASE.wed6 },
+      ]},
+      { d: "12/24", dow: "木", tag: "A特", slots: [
+        { s: 1, span: 2, type: "class",  data: ["英語","英語","英語","数①","数①","数①","国語","国語"] },
+        { s: 3, span: 1, type: "lhr" },
+        { s: 4, span: 1, type: "course", data: COURSE_BASE.thu4 },
+        { s: 5, span: 2, type: "class",  data: ["国語","国語","国語","英語","英語","英語","数①","数①"] },
+      ]},
+      { d: "12/25", dow: "金", slots: [
+        { s: 1, span: 1, type: "course", data: COURSE_BASE.fri1 },
+        { s: 2, span: 1, type: "course", data: COURSE_BASE.fri2 },
+        { s: 3, span: 1, type: "course", data: COURSE_BASE.fri3 },
+        { s: 4, span: 2, type: "class",  data: ["数①","数①","数①","国語","国語","国語","英語","英語"] },
+        { s: 6, span: 1, type: "course", data: COURSE_BASE.fri6 },
+      ]},
+    ]
+  },
+  {
+    title: "第5週", range: "1/5〜1/8",
+    days: [
+      { d: "1/4", dow: "月", emptyDay: true },
+      { d: "1/5", dow: "火", slots: [
+        { s: 1, span: 6, type: "exam", title: "河合塾 Kパック模試", note: "8:40開始 / 共テ時計持参" }
+      ]},
+      { d: "1/6", dow: "水", slots: [
+        { s: 1, span: 6, type: "exam", title: "河合塾 Kパック模試", note: "8:40開始 / 共テ時計持参" }
+      ]},
+      { d: "1/7", dow: "木", slots: [
+        { s: 1, span: 1, type: "course", time: "9:00〜",  data: COURSE_BASE.thu1 },
+        { s: 2, span: 2, type: "class",  time: "11:10〜", data: ["英語","英語","英語","数②","数②","数②","国語","国語"] },
+        { s: 4, span: 1, type: "course", time: "13:45〜", data: COURSE_BASE.thu4 },
+        { s: 5, span: 2, type: "class",  time: "14:50〜", data: ["国語","国語","国語","英語","英語","英語","数②","数②"] },
+      ]},
+      { d: "1/8", dow: "金", slots: [
+        { s: 1, span: 1, type: "course", time: "9:00〜",  data: COURSE_BASE.fri1 },
+        { s: 2, span: 1, type: "course", time: "11:10〜", data: COURSE_BASE.fri2 },
+        { s: 3, span: 1, type: "course", time: "13:45〜", data: COURSE_BASE.fri3 },
+        { s: 4, span: 2, type: "class",  time: "",        data: ["数②","数②","数②","国語","国語","国語","英語","英語"] },
+        { s: 6, span: 1, type: "course", time: "14:50〜", data: COURSE_BASE.fri6 },
+      ]},
+    ]
+  },
+  {
+    title: "最終週（第6週）", range: "1/12〜1/18",
+    days: [
+      { d: "1/11", dow: "月", emptyDay: true },
+      { d: "1/12", dow: "火", slots: [
+        { s: 1, span: 1, type: "course", data: COURSE_BASE.tue1 },
+        { s: 2, span: 2, type: "class",  data: ["英語","英語","英語","数①","数①","数①","国語","国語"] },
+        { s: 4, span: 1, type: "course", data: ["自習","社BCKL","社BCKL","物理","生物","物理","社BCKL","社BCKL"], chg: [0,3,5] },
+        { s: 5, span: 2, type: "class",  data: ["国語","国語","国語","英語","英語","英語","数①","数①"] },
+      ]},
+      { d: "1/13", dow: "水", slots: [
+        { s: 1, span: 2, type: "class",  data: ["数①","数①","数①","国語","国語","国語","英語","英語"] },
+        { s: 3, span: 1, type: "course", data: ["情報","情報","自習","物理","化学","地理","情報","化学"], chg: [2,4,7] },
+        { s: 4, span: 1, type: "course", data: COURSE_BASE.wed4 },
+        { s: 5, span: 1, type: "course", data: ["社ABN","社ABN","生物基礎","物理","社ABN","物理","化学","化学"], chg: [3] },
+        { s: 6, span: 1, type: "course", data: ["地学基礎","自習","情報","地理/政経","生物","情報","化学","情報"], chg: [1,6] },
+      ]},
+      { d: "1/14", dow: "木", slots: [
+        { s: 1, span: 1, type: "course", data: COURSE_BASE.thu1 },
+        { s: 2, span: 2, type: "class",  data: ["英語","英語","英語","数②","数②","数②","国語","国語"] },
+        { s: 4, span: 1, type: "course", data: COURSE_BASE.thu4 },
+        { s: 5, span: 2, type: "class",  data: ["国語","国語","国語","英語","英語","英語","数②","数②"] },
+      ]},
+      { d: "1/15", dow: "金", tag: "A特", slots: [
+        { s: 1, span: 2, type: "class",  data: ["数②","数②","数②","国語","国語","国語","英語","英語"] },
+        { s: 3, span: 1, type: "lhr" },
+      ]},
+    ],
+    after: [
+      { d: "1/16 土", title: "共通テスト 第1日目", note: "健闘を祈る", kind: "" },
+      { d: "1/17 日", title: "共通テスト 第2日目", note: "最後まで頑張れ", kind: "" },
+      { d: "1/18 月", title: "8:40〜 自己採点・リサーチ提出", note: "遅刻厳禁 / 持参: 全問題冊子・スマホ等の通信端末・筆記具（事前登録を済ませる）", kind: "selfcheck" },
+    ]
+  }
+];
+
+const classSel = document.getElementById("classSelect");
+const courseSel = document.getElementById("courseSelect");
+const root = document.getElementById("scheduleRoot");
+const tabs = document.querySelectorAll(".w-tab");
+let activeWeek = "all";
+
+function render() {
+  const ci = parseInt(classSel.value, 10);
+  const mi = parseInt(courseSel.value, 10);
+  const cRoom = ROOMS[ci];
+  const mRoom = ROOMS[mi];
+
+  let html = "";
+  WEEKS.forEach((w, wi) => {
+    if (activeWeek !== "all" && String(wi) !== activeWeek) return;
+
+    // Header row (col 1: 限, cols 2..6: days)
+    let gridItems = `<div class="tt-corner" style="grid-column:1;grid-row:1;">限</div>`;
+    w.days.forEach((day, di) => {
+      const col = di + 2;
+      const tagHtml = day.tag ? `<span class="day-tag">${day.tag}</span>` : "";
+      gridItems += `
+        <div class="tt-day-hdr" style="grid-column:${col};grid-row:1;">
+          <div class="tt-day-date">${day.emptyDay ? "—" : day.d}</div>
+          <div class="tt-day-dow">${day.dow}${tagHtml}</div>
+        </div>`;
+    });
+
+    // Period axis (rows 2..7 for periods 1..6)
+    for (let p = 1; p <= 6; p++) {
+      gridItems += `<div class="tt-p-hdr" style="grid-column:1;grid-row:${p + 1};">${p}</div>`;
+    }
+
+    // Day cells
+    w.days.forEach((day, di) => {
+      const col = di + 2;
+      if (day.emptyDay) {
+        gridItems += `<div class="tt-cell empty" style="grid-column:${col};grid-row:2 / 8;"><span class="c-note">休み</span></div>`;
+        return;
+      }
+      const covered = new Set();
+      day.slots.forEach(s => {
+        for (let k = s.s; k < s.s + s.span; k++) covered.add(k);
+        const rStart = s.s + 1;
+        const rEnd = s.s + s.span + 1;
+
+        if (s.type === "exam") {
+          gridItems += `
+            <div class="tt-cell is-exam" style="grid-column:${col};grid-row:${rStart} / ${rEnd};">
+              <div class="c-subj">${s.title}</div>
+              <div class="c-note">${s.note}</div>
+            </div>`;
+          return;
+        }
+
+        let subj = "", room = "", cls = "", isChanged = false;
+        if (s.type === "class") {
+          subj = s.data[ci];
+          room = cRoom;
+          cls = "is-class";
+        } else if (s.type === "course") {
+          subj = s.data[mi];
+          room = mRoom;
+          cls = "is-course";
+          isChanged = Array.isArray(s.chg) && s.chg.includes(mi);
+        } else {
+          subj = "LHR";
+          room = cRoom;
+          cls = "is-lhr";
+        }
+        const chgCls = isChanged ? " changed" : "";
+        const chgBadge = isChanged ? '<span class="c-chg">変更</span>' : "";
+        const timeHtml = s.time ? `<span class="c-time">${s.time}</span>` : "";
+
+        gridItems += `
+          <div class="tt-cell ${cls}${chgCls}" style="grid-column:${col};grid-row:${rStart} / ${rEnd};">
+            ${timeHtml}
+            ${chgBadge}
+            <div class="c-subj">${subj}</div>
+            <div class="c-room">${room}</div>
+          </div>`;
+      });
+
+      // Fill uncovered periods cleanly
+      for (let p = 1; p <= 6; p++) {
+        if (!covered.has(p)) {
+          gridItems += `<div class="tt-cell empty" style="grid-column:${col};grid-row:${p + 1};"></div>`;
+        }
+      }
+    });
+
+    let afterHtml = "";
+    if (w.after && w.after.length) {
+      afterHtml = `<div class="after-list">` + w.after.map(a => `
+        <div class="after-row ${a.kind}">
+          <div class="after-date">${a.d}</div>
+          <div class="after-body">
+            <div class="after-title">${a.title}</div>
+            <div class="after-note">${a.note}</div>
+          </div>
+        </div>`).join("") + `</div>`;
+    }
+
+    html += `
+      <section class="week-card">
+        <div class="week-hdr">
+          <span class="w-title">${w.title}</span>
+          <span class="w-range">${w.range}</span>
+        </div>
+        <div class="tt-grid">${gridItems}</div>
+        ${afterHtml}
+      </section>`;
+  });
+  root.innerHTML = html;
+}
+
+classSel.addEventListener("change", render);
+courseSel.addEventListener("change", render);
+tabs.forEach(btn => {
+  btn.addEventListener("click", () => {
+    tabs.forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    activeWeek = btn.dataset.week;
+    render();
+  });
+});
+
+render();
+</script>
+</body>
+</html>
