@@ -1,6 +1,6 @@
 // Offline support. App files: served from cache, refreshed in the background.
 // Timetable data is never cached here; the app keeps its own copy and asks before updating.
-const CACHE = "tokuhen-v1";
+const CACHE = "tokuhen-v3";
 const SHELL = [
   "./",
   "index.html",

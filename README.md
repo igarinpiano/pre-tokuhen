@@ -30,6 +30,7 @@ https://igarinpiano.github.io/pre-tokuhen/?class=3&division=l&soc-bckl=pol
 | `geo-pol` | `geo`, `pol` |
 | `sci-ab` | `chem-b`, `bio-b`, `earth-b` |
 | `sci-bc` | `bio-b`, `earth-b` |
+| `lang` | `ja` or `en` (optional; overrides the browser language) |
 
 Without settings, the week and day views list every class and division.
 
@@ -48,7 +49,7 @@ Everything the site shows comes from [`data/timetable.json`](data/timetable.json
   - `by` — `"class"` (cells `"1"`–`"8"`) or `"division"` (cells `"a"`…`"o"`).
   - `cells` — subject id for each class or division.
   - `changed` — cells that differ from the usual timetable (shown with a mark).
-  - `type` — `"a"` or `"p"` for A特 / P特 days.
+  - `type` — `"a"` for 午前特 (AM-toku) days, `"p"` for 午後特 (PM-toku) days.
 - `subjects` — names (`ja`, `en`), short labels for the timeline, and color group.
 - `electives` — the choices for each elective subject.
 - `events` — all-day events with a note.

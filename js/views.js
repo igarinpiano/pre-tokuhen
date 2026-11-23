@@ -118,17 +118,17 @@ export function renderTimeline(root, ctx) {
     const type = model.dayType(d);
     parts.push(`<button type="button" class="tl-date${isToday ? " is-today" : ""}" data-day="${bi}" data-date="${d}" style="grid-row:1;grid-column:${span}">
       ${esc(formatShort(d))}${type ? ` <span class="daytype">${esc(type)}</span>` : ""}</button>`);
-    parts.push(`<div class="tl-bg${isToday ? " is-today" : ""}" data-day="${bi}" style="grid-row:2/${lastRow};grid-column:${span}"></div>`);
+    parts.push(`<div class="tl-bg${isToday ? " is-today" : ""}" data-day="${bi}" style="grid-row:3/${lastRow};grid-column:${span}"></div>`);
 
     if (b.type === "event") {
       const ev = model.event(d);
-      parts.push(`<div class="tl-periods" data-day="${bi}" style="grid-row:2;grid-column:${span}"></div>`);
+      parts.push(`<div class="tl-periods${isToday ? " is-today" : ""}" data-day="${bi}" style="grid-row:2;grid-column:${span}"></div>`);
       parts.push(`<div class="tl-event" data-day="${bi}" style="grid-row:3/${lastRow};grid-column:${span}">
         <span>${esc(ev[lang])}</span></div>`);
       return;
     }
     for (let p = 1; p <= 6; p++) {
-      parts.push(`<div class="tl-period" data-day="${bi}" style="grid-row:2;grid-column:${b.col + p - 1}">${p}</div>`);
+      parts.push(`<div class="tl-period${p === 1 ? " is-first" : ""}${isToday ? " is-today" : ""}" data-day="${bi}" style="grid-row:2;grid-column:${b.col + p - 1}">${p}</div>`);
     }
     for (const slot of model.day(d).slots) {
       const r = model.resolve(slot, sel);
@@ -158,7 +158,7 @@ export function renderTimeline(root, ctx) {
     const day = el ? el.dataset.day : null;
     if (day === hovered) return;
     hovered = day;
-    hoverStyle.textContent = day === null ? "" : `.tl-grid [data-day="${day}"]{--hover:1}`;
+    hoverStyle.textContent = day === null ? "" : `.tl-grid [data-day="${day}"]{--hov:inset 0 0 0 999px var(--hover-tint)}`;
   });
   root.addEventListener("pointerleave", () => {
     hovered = null;

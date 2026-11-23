@@ -109,12 +109,16 @@ const STRINGS = {
 };
 
 function detectLang() {
-  const forced = new URLSearchParams(location.search).get("lang");
+  const forced = (new URLSearchParams(location.search).get("lang") || "").toLowerCase();
   if (forced === "ja" || forced === "en") return forced;
   const first = (navigator.languages && navigator.languages[0]) || navigator.language || "ja";
   return first.toLowerCase().startsWith("ja") ? "ja" : "en";
 }
 
 export const lang = detectLang();
+// Language chosen with ?lang=, kept in links the app writes.
+export const forcedLang = ["ja", "en"].includes((new URLSearchParams(location.search).get("lang") || "").toLowerCase())
+  ? lang
+  : null;
 export const t = STRINGS[lang];
 document.documentElement.lang = lang;
