@@ -226,6 +226,10 @@ button.cal-day:hover { background: var(--surface); }
   min-width: 4.5em;
 }
 .picker select:focus-visible { outline: none; }
+/* Size each select to its current value where supported, so short values take little room. */
+@supports (field-sizing: content) {
+  .picker select { field-sizing: content; min-width: 2.5em; }
+}
 .picker:focus-within { outline: 2px solid var(--accent); outline-offset: 1px; }
 .picker select option { color: initial; }
 
@@ -870,4 +874,30 @@ html.tl-page-scroll .tl-grid {
   #print-area .is-past { opacity: 1; color: inherit; }
   #print-area .day-list { max-width: none; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
   #print-area .day-slot { min-height: 0; padding: 8px 12px; }
+}
+
+/* ---------- Settings button (phones) ---------- */
+
+.settings-chip { display: none; }
+.settings-panel { display: grid; gap: 12px; }
+
+@media (max-width: 640px), (hover: none) and (pointer: coarse) {
+  .settings-chip:not([hidden]) {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    justify-self: start;
+    max-width: 100%;
+    height: 40px;
+    padding: 0 12px;
+    border: 1px solid var(--line);
+    border-radius: var(--btn-radius);
+    background: var(--bg);
+    font-size: 15px;
+    font-weight: 700;
+  }
+  .settings-chip-text { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+  .settings-chip .icon:last-child { color: var(--muted); transition: transform 0.15s; }
+  .settings-chip[aria-expanded="true"] .icon:last-child { transform: rotate(180deg); }
+  html.settings-collapsed .settings-panel { display: none; }
 }
