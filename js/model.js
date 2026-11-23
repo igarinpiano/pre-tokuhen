@@ -60,6 +60,13 @@ export class Model {
     return s ? s[lang] : id;
   }
 
+  // Shorter name for tight spaces (falls back to the full name).
+  abbr(id) {
+    const s = this.subjects[id];
+    if (!s) return id;
+    return (s.abbr && s.abbr[lang]) || s[lang];
+  }
+
   // Elective subjects (e.g. 社会BCKL) that a division actually has.
   electivesFor(division) {
     if (!division) return [];
@@ -78,13 +85,23 @@ export class Model {
     const s = this.subjects[id];
     if (!s) return { name: id, detail: "", short: id, group: "other" };
     let detail = s.detail ? s.detail[lang] : "";
+    let detailAbbr = detail;
     let short = s.short ? s.short[lang] : s[lang];
     const chosen = sel && sel.electives ? sel.electives[id] : null;
     if (this.electives[id] && chosen && this.subjects[chosen]) {
       detail = this.subjects[chosen][lang];
+      detailAbbr = this.abbr(chosen);
       short = this.subjects[chosen].short ? this.subjects[chosen].short[lang] : detail;
     }
-    return { name: s[lang], detail, short, group: s.group, combined: Boolean(s.combined) };
+    return {
+      name: s[lang],
+      abbr: this.abbr(id),
+      detail,
+      detailAbbr,
+      short,
+      group: s.group,
+      combined: Boolean(s.combined),
+    };
   }
 
   // Returns the cells of a slot that apply to the selection.

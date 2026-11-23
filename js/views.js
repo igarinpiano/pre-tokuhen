@@ -99,9 +99,10 @@ export function renderTimeline(root, ctx) {
   parts.push(`<div class="tl-corner" style="grid-row:1/3;grid-column:1"></div>`);
   rows.forEach((id, i) => {
     const l = model.label(id, sel);
-    parts.push(`<div class="tl-label g-${l.group}" style="grid-row:${i + 3};grid-column:1">
-      <span class="tl-label-name">${esc(l.name)}</span>
-      ${l.detail ? `<span class="tl-label-detail">${esc(l.detail)}</span>` : ""}
+    const full = l.detail ? `${l.name} (${l.detail})` : l.name;
+    parts.push(`<div class="tl-label g-${l.group}" style="grid-row:${i + 3};grid-column:1" title="${esc(full)}">
+      <span class="tl-label-name">${esc(l.abbr)}</span>
+      ${l.detailAbbr ? `<span class="tl-label-detail">${esc(l.detailAbbr)}</span>` : ""}
     </div>`);
   });
 
