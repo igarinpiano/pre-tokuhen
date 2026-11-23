@@ -26,6 +26,9 @@ export const icons = {
       <rect x="6.5" y="9.3" width="11" height="11" rx="3" transform="rotate(45 12 14.8)" fill="currentColor" opacity=".38"/>
       <rect x="6.5" y="3.7" width="11" height="11" rx="3" transform="rotate(45 12 9.2)" fill="currentColor"/>
     </svg>`,
+  settings: (s) =>
+    svg(`<circle cx="12" cy="12" r="3"/><path d="M19.4 13.4l1.7 1.3-1.9 3.3-2-.8a7.4 7.4 0 0 1-1.8 1l-.3 2.1h-3.8l-.3-2.1a7.4 7.4 0 0 1-1.8-1l-2 .8-1.9-3.3 1.7-1.3a7.6 7.6 0 0 1 0-2.8L3.3 9.3l1.9-3.3 2 .8a7.4 7.4 0 0 1 1.8-1l.3-2.1h3.8l.3 2.1a7.4 7.4 0 0 1 1.8 1l2-.8 1.9 3.3-1.7 1.3a7.6 7.6 0 0 1 0 2.8z"/>`, s),
+  chevronDown: (s) => svg(`<path d="M6 9.5l6 6 6-6"/>`, s),
   print: (s) =>
     svg(`<path d="M7 8.5V3.5h10v5"/><rect x="3.5" y="8.5" width="17" height="8.5" rx="2.5"/><path d="M7 14h10v6.5H7z"/><path d="M16.5 11.5h.01"/>`, s),
   flag: (s) => svg(`<path d="M5 21V4.5M5 4.5h11l-2 4 2 4H5"/>`, s),

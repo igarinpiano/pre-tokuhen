@@ -40,6 +40,7 @@ const state = {
   sel: { class: null, division: null, electives: {} },
   view: null,
   date: null,
+  settingsOpen: null, // phones: whether the pickers are shown under the settings button
 };
 
 /* ---------- Data loading and update notice ---------- */
@@ -235,12 +236,31 @@ $("pickers").addEventListener("change", (e) => {
   }
 });
 
+// Phones: once class and division are set, the pickers fold into one button that shows the
+// current settings. Until then the pickers stay open, so first-time visitors see them.
+function renderSettingsChip() {
+  const chip = $("settings-chip");
+  const s = state.sel;
+  const ready = Boolean(s.class && s.division);
+  if (!ready) state.settingsOpen = true;
+  else if (state.settingsOpen === null) state.settingsOpen = false;
+  chip.hidden = !ready;
+  const extra = model.electivesFor(s.division).map((id) => (s.electives[id] ? model.name(s.electives[id]) : ""));
+  chip.innerHTML = `${icons.settings(18)}<span class="settings-chip-text">${esc(
+    t.settingsSummary(s.class, s.division && s.division.toUpperCase(), extra),
+  )}</span>${icons.chevronDown(16)}`;
+  chip.setAttribute("aria-label", t.settings);
+  chip.setAttribute("aria-expanded", String(state.settingsOpen));
+  document.documentElement.classList.toggle("settings-collapsed", !state.settingsOpen);
+}
+
 function updateSel(patch) {
   const hadPersonal = state.sel.class && state.sel.division;
   Object.assign(state.sel, patch);
   cleanElectives();
   writeURL();
   renderPickers();
+  renderSettingsChip();
   renderSetupHint();
   renderShortcutButton();
   if (!hadPersonal && state.sel.class && state.sel.division && !store.get("tt:view") && wide()) state.view = "timeline";
@@ -543,6 +563,7 @@ function build() {
   }
 
   renderPickers();
+  renderSettingsChip();
   renderSetupHint();
   renderShortcutButton();
   renderTabs();
@@ -574,6 +595,11 @@ $("view-tabs").addEventListener("keydown", (e) => {
   $("view-tabs").querySelector(`[data-view="${next}"]`).focus();
 });
 $("shortcut-btn").addEventListener("click", openShortcutDialog);
+$("settings-chip").addEventListener("click", () => {
+  state.settingsOpen = !state.settingsOpen;
+  renderSettingsChip();
+  if (state.settingsOpen) $("pick-class")?.focus({ preventScroll: true });
+});
 
 // Keyboard: ← → move by a school day (Shift: a week) in every view; Return opens the day view
 // from the week or timeline. Keys typed into controls with their own arrow handling are left alone.
