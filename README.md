@@ -17,6 +17,9 @@ including the winter break, the K-pack mock exam, the Common Test and self-scori
   them), the timeline has previous/next week buttons, and the date strip moves by a day with the
   arrow keys once focused. Add `vimium=1` to the address to make the timeline scroll the page
   sideways, so Vimium's `h` / `l` move it.
+- Days that have passed are greyed out.
+- The week and day views have a print button: choose a range, and it prints one week per
+  landscape page or the days back to back, on white, with your class and division in the header.
 - Follows light and dark mode.
 - Works offline and can be added to the Home Screen. When the timetable data changes,
   open copies show an **Update** button.

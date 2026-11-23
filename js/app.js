@@ -2,7 +2,7 @@ import { forcedLang, lang, t } from "./i18n.js";
 import { config } from "./config.js";
 import { icons } from "./icons.js";
 import { Model } from "./model.js";
-import { addDays, mondayOf, detectedCalendar, formatLong, formatUpdated, getCalendar, setCalendar, todayISO } from "./format.js";
+import { addDays, mondayOf, detectedCalendar, formatLong, formatMedium, formatUpdated, getCalendar, setCalendar, todayISO } from "./format.js";
 import { createScrubber } from "./scrubber.js";
 import { createCalendar } from "./calendar.js";
 import { esc, renderDay, renderTimeline, renderWeek } from "./views.js";
@@ -112,8 +112,16 @@ async function boot() {
       return;
     }
   }
+  // A page left open overnight (or a Home Screen app resumed the next morning) jumps to the new day.
+  let shownToday = todayISO();
   document.addEventListener("visibilitychange", () => {
-    if (document.visibilityState === "visible" && Date.now() - lastCheck > 5 * 60 * 1000) checkForUpdate();
+    if (document.visibilityState !== "visible") return;
+    if (Date.now() - lastCheck > 5 * 60 * 1000) checkForUpdate();
+    if (model && todayISO() !== shownToday) {
+      shownToday = todayISO();
+      state.date = defaultDate();
+      build();
+    }
   });
   if (!navigator.onLine && cached) showBanner(t.offline);
 }
@@ -278,6 +286,95 @@ function renderShortcutButton() {
   btn.title = t.shortcut;
 }
 
+/* ---------- Printing ---------- */
+
+function selectionSummary() {
+  const s = state.sel;
+  const parts = [];
+  if (s.class) parts.push(`${t.classLabel} ${s.class}`);
+  if (s.division) parts.push(`${t.divisionLabel} ${s.division.toUpperCase()}`);
+  for (const id of model.electivesFor(s.division)) {
+    if (s.electives[id]) parts.push(`${model.abbr(id)} ${model.name(s.electives[id])}`);
+  }
+  return parts.join("　");
+}
+
+function openPrintDialog() {
+  const view = state.view === "week" ? "week" : "day";
+  const mon = mondayOf(state.date);
+  const from = view === "week" ? model.nextEntry(mon) : state.date;
+  const to = view === "week" ? model.prevEntry(addDays(mon, 6)) : state.date;
+  const options = (selected) =>
+    model.dates.map((d) => `<option value="${d}" ${d === selected ? "selected" : ""}>${esc(formatMedium(d))}</option>`).join("");
+  const dlg = $("print-dialog");
+  dlg.innerHTML = `
+    <form method="dialog" class="print-form">
+      <div class="sheet-head">
+        <h2>${esc(t.printTitle)}</h2>
+        <button type="button" class="icon-btn" data-close aria-label="${esc(t.close)}">${icons.close()}</button>
+      </div>
+      <p>${esc(t.printBody(view))}</p>
+      <div class="print-range">
+        <label class="picker"><span class="picker-label">${esc(t.printFrom)}</span><select id="print-from">${options(from)}</select></label>
+        <label class="picker"><span class="picker-label">${esc(t.printTo)}</span><select id="print-to">${options(to)}</select></label>
+      </div>
+      <div class="sheet-actions">
+        <button type="submit" class="primary-btn">${icons.print(16)}<span>${esc(t.printGo)}</span></button>
+        <button type="button" class="text-btn" data-close>${esc(t.cancel)}</button>
+      </div>
+    </form>`;
+  dlg.querySelectorAll("[data-close]").forEach((b) => b.addEventListener("click", () => dlg.close()));
+  dlg.querySelector("form").addEventListener("submit", (e) => {
+    e.preventDefault();
+    let a = $("print-from").value;
+    let b = $("print-to").value;
+    if (a > b) [a, b] = [b, a];
+    dlg.close();
+    printRange(view, a, b);
+  });
+  dlg.showModal();
+}
+
+function printRange(view, from, to) {
+  const area = $("print-area");
+  area.innerHTML = "";
+  const noop = () => {};
+  const ctxFor = (date) => ({ model, sel: state.sel, date, onSelect: noop, onOpenDay: noop, onPrint: noop });
+  const head = document.createElement("header");
+  head.className = "print-head";
+  head.innerHTML = `<strong>${esc(t.appTitle)}</strong><span>${esc(selectionSummary())}</span>`;
+  area.append(head);
+  if (view === "week") {
+    for (let mon = mondayOf(from); mon <= to; mon = addDays(mon, 7)) {
+      const first = model.nextEntry(mon);
+      if (first > addDays(mon, 6)) continue; // a week without school (winter break)
+      const page = document.createElement("section");
+      page.className = "print-page view view-week";
+      renderWeek(page, ctxFor(first));
+      area.append(page);
+    }
+  } else {
+    for (const d of model.dates.filter((x) => x >= from && x <= to)) {
+      const page = document.createElement("section");
+      page.className = "print-day view view-day";
+      renderDay(page, ctxFor(d));
+      area.append(page);
+    }
+  }
+  // Print on white with the week view in landscape, whatever the screen theme is.
+  $("print-page-style").textContent = `@page { size: A4 ${view === "week" ? "landscape" : "portrait"}; margin: 10mm; }`;
+  const root = document.documentElement;
+  const theme = root.dataset.theme;
+  root.dataset.theme = "light";
+  const restore = () => {
+    if (theme) root.dataset.theme = theme;
+    else delete root.dataset.theme;
+    area.innerHTML = "";
+  };
+  window.addEventListener("afterprint", restore, { once: true });
+  window.print();
+}
+
 function openShortcutDialog() {
   const dlg = $("shortcut-dialog");
   const s = state.sel;
@@ -394,6 +491,7 @@ function renderView() {
     date: state.date,
     onSelect: (d) => setDate(d),
     onOpenDay: (d) => openDay(d),
+    onPrint: () => openPrintDialog(),
     onVisibleRange: (a, b) => {
       const sel = state.date >= a && state.date <= b ? state.date : a;
       if (sel !== state.date) {

@@ -37,6 +37,7 @@ export function createCalendar(button, popover, { model, onPick, onCalendar }) {
           const cls = ["cal-day"];
           if (model.event(iso)) cls.push("is-event");
           if (iso === today) cls.push("is-today");
+          if (iso < today) cls.push("is-past");
           if (iso === current) cls.push("is-selected");
           cells.push(
             has

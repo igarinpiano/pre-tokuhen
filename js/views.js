@@ -116,15 +116,16 @@ export function renderTimeline(root, ctx) {
     const d = b.date;
     const span = `${b.col}/${b.col + 6}`;
     const isToday = d === today;
+    const past = d < today ? " is-past" : "";
     const type = model.dayType(d);
-    parts.push(`<button type="button" class="tl-date${isToday ? " is-today" : ""}" data-day="${bi}" data-date="${d}" style="grid-row:1;grid-column:${span}">
+    parts.push(`<button type="button" class="tl-date${isToday ? " is-today" : ""}${past}" data-day="${bi}" data-date="${d}" style="grid-row:1;grid-column:${span}">
       ${esc(formatShort(d))}${type ? ` <span class="daytype">${esc(type)}</span>` : ""}</button>`);
     parts.push(`<div class="tl-bg${isToday ? " is-today" : ""}" data-day="${bi}" style="grid-row:3/${lastRow};grid-column:${span}"></div>`);
 
     if (b.type === "event") {
       const ev = model.event(d);
       parts.push(`<div class="tl-periods${isToday ? " is-today" : ""}" data-day="${bi}" style="grid-row:2;grid-column:${span}"></div>`);
-      parts.push(`<div class="tl-event" data-day="${bi}" style="grid-row:3/${lastRow};grid-column:${span}">
+      parts.push(`<div class="tl-event${past}" data-day="${bi}" style="grid-row:3/${lastRow};grid-column:${span}">
         <span>${esc(ev[lang])}</span></div>`);
       return;
     }
@@ -139,7 +140,7 @@ export function renderTimeline(root, ctx) {
       const l = model.label(item.subject, sel);
       const c0 = b.col + slot.periods[0] - 1;
       const title = `${formatMedium(d)} ${t.period(periodLabel(slot.periods))}: ${l.name}${l.detail ? ` (${l.detail})` : ""}${item.changed ? ` — ${t.changed}` : ""}`;
-      parts.push(`<div class="tl-cell g-${l.group}${item.changed ? " is-changed" : ""}" data-day="${bi}" title="${esc(title)}"
+      parts.push(`<div class="tl-cell g-${l.group}${item.changed ? " is-changed" : ""}${past}" data-day="${bi}" title="${esc(title)}"
         style="grid-row:${row};grid-column:${c0}/${c0 + slot.periods.length}">${esc(l.short)}</div>`);
     }
   });
@@ -297,17 +298,19 @@ export function renderWeek(root, ctx) {
     const c = i + 2;
     const type = model.dayType(d);
     const cls = ["wk-date"];
+    const past = d < today ? " is-past" : "";
     if (d === today) cls.push("is-today");
+    if (past) cls.push("is-past");
     if (d === date) cls.push("is-selected");
     parts.push(`<button type="button" class="${cls.join(" ")}" data-date="${d}" ${d === date ? 'aria-current="date"' : ""} style="grid-row:1;grid-column:${c}">
       <span>${esc(formatShort(d))}</span>${type ? `<span class="daytype">${esc(type)}</span>` : ""}</button>`);
     const ev = model.event(d);
     if (ev) {
-      parts.push(`<div class="wk-event" style="grid-row:2/8;grid-column:${c}">${eventCard(ev, true)}</div>`);
+      parts.push(`<div class="wk-event${past}" style="grid-row:2/8;grid-column:${c}">${eventCard(ev, true)}</div>`);
       return;
     }
     if (!model.hasEntry(d)) {
-      parts.push(`<div class="wk-off" style="grid-row:2/8;grid-column:${c}"><span>${esc(t.noClasses)}</span></div>`);
+      parts.push(`<div class="wk-off${past}" style="grid-row:2/8;grid-column:${c}"><span>${esc(t.noClasses)}</span></div>`);
       return;
     }
     for (const slot of model.day(d).slots) {
@@ -316,10 +319,10 @@ export function renderWeek(root, ctx) {
       if (r.single) {
         const item = r.items[0];
         const l = model.label(item.subject, sel);
-        parts.push(`<div class="wk-cell g-${l.group}${item.changed ? " is-changed" : ""}" style="grid-row:${rows};grid-column:${c}">
+        parts.push(`<div class="wk-cell g-${l.group}${item.changed ? " is-changed" : ""}${past}" style="grid-row:${rows};grid-column:${c}">
           ${subjectBlock(model, item, sel, { showRoom: false })}</div>`);
       } else {
-        parts.push(`<div class="wk-cell is-multi" style="grid-row:${rows};grid-column:${c}">${groupedList(model, r, slot.by, sel)}</div>`);
+        parts.push(`<div class="wk-cell is-multi${past}" style="grid-row:${rows};grid-column:${c}">${groupedList(model, r, slot.by, sel)}</div>`);
       }
     }
   });
@@ -328,9 +331,12 @@ export function renderWeek(root, ctx) {
   root.innerHTML = `
     <div class="view-head">
       <h2 class="view-title">${esc(label)}</h2>
+      <div class="view-actions">
+      <button type="button" class="icon-btn print-btn" data-print aria-label="${esc(t.print)}" title="${esc(t.print)}">${icons.print()}</button>
       <div class="stepper">
         <button type="button" class="icon-btn" data-step="-1" aria-label="${esc(t.prevWeek)}" ${mondayOf(date) <= model.first ? "disabled" : ""}>${icons.left()}</button>
         <button type="button" class="icon-btn" data-step="1" aria-label="${esc(t.nextWeek)}" ${addDays(mondayOf(date), 7) > model.last ? "disabled" : ""}>${icons.right()}</button>
+      </div>
       </div>
     </div>
     <div class="wk-scroll">
@@ -348,6 +354,7 @@ export function renderWeek(root, ctx) {
       ctx.onSelect(model.nextEntry(mondayOf(prev)));
     }
   });
+  root.querySelector("[data-print]").addEventListener("click", () => ctx.onPrint?.());
   root.querySelector(".wk-grid").addEventListener("click", (e) => {
     const h = e.target.closest(".wk-date");
     if (h) ctx.onOpenDay(h.dataset.date);
@@ -408,18 +415,22 @@ export function renderDay(root, ctx) {
   root.innerHTML = `
     <div class="view-head">
       <h2 class="view-title">${esc(formatLong(date))}${type ? ` <span class="daytype">${esc(type)}</span>` : ""}${isToday ? ` <span class="today-pill">${esc(t.today)}</span>` : ""}</h2>
+      <div class="view-actions">
+      <button type="button" class="icon-btn print-btn" data-print aria-label="${esc(t.print)}" title="${esc(t.print)}">${icons.print()}</button>
       <div class="stepper">
         <button type="button" class="icon-btn" data-step="-1" aria-label="${esc(t.prevDay)}" ${date <= model.first ? "disabled" : ""}>${icons.left()}</button>
         <button type="button" class="icon-btn" data-step="1" aria-label="${esc(t.nextDay)}" ${date >= model.last ? "disabled" : ""}>${icons.right()}</button>
       </div>
+      </div>
     </div>
-    ${body}`;
+    <div class="day-body${date < todayISO() ? " is-past" : ""}">${body}</div>`;
 
   root.querySelector(".stepper").addEventListener("click", (e) => {
     const b = e.target.closest("[data-step]");
     if (b) ctx.onSelect(model.stepEntry(date, Number(b.dataset.step)));
   });
   root.querySelector("[data-go]")?.addEventListener("click", (e) => ctx.onSelect(e.currentTarget.dataset.go));
+  root.querySelector("[data-print]").addEventListener("click", () => ctx.onPrint?.());
   return { range: [date, date] };
 }
 
