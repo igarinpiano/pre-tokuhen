@@ -1,0 +1,58 @@
+name: Report what's missing or incorrect
+description: A class is wrong or missing, or classes were swapped.
+title: "[Timetable] "
+labels: ["timetable"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping keep the timetable correct. One report per change is easiest to handle.
+  - type: dropdown
+    id: kind
+    attributes:
+      label: What kind of change is this?
+      options:
+        - Something is wrong
+        - Something is missing
+        - Classes were swapped
+        - Other
+    validations:
+      required: true
+  - type: input
+    id: date
+    attributes:
+      label: Date
+      description: YYYY-MM-DD
+      placeholder: "2026-12-01"
+    validations:
+      required: true
+  - type: input
+    id: period
+    attributes:
+      label: Period(s)
+      placeholder: "2-3"
+  - type: input
+    id: class
+    attributes:
+      label: Class
+      description: 1-8
+  - type: input
+    id: division
+    attributes:
+      label: Division
+      description: A, B, C, K, L, M, N or O
+  - type: textarea
+    id: shown
+    attributes:
+      label: What the site shows
+  - type: textarea
+    id: correct
+    attributes:
+      label: What it should be
+    validations:
+      required: true
+  - type: textarea
+    id: source
+    attributes:
+      label: Where did you see this?
+      description: For example the printed timetable or an announcement in class.
