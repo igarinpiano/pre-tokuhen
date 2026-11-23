@@ -1,9 +1,10 @@
 // Date picker popover: one small month grid per month of the term.
 import { t } from "./i18n.js";
+import { getCalendar } from "./format.js";
 import { addDays, formatDayNum, formatLong, formatMonthYear, formatWeekdayNarrow, parseISO, toISO, todayISO } from "./format.js";
 import { esc } from "./views.js";
 
-export function createCalendar(button, popover, { model, onPick }) {
+export function createCalendar(button, popover, { model, onPick, onCalendar }) {
   let open = false;
   let current = null;
 
@@ -17,7 +18,13 @@ export function createCalendar(button, popover, { model, onPick }) {
     }
     // Weekday header from a known Sunday.
     const heads = Array.from({ length: 7 }, (_, i) => formatWeekdayNarrow(addDays("2026-11-29", i)));
-    popover.innerHTML = months
+    const cal = getCalendar();
+    const toggle = `<div class="cal-system" role="group" aria-label="${esc(t.calendarSystem)}">
+      ${[["gregory", t.gregorian], ["japanese", t.japaneseEra]]
+        .map(([v, label]) => `<button type="button" data-cal="${v}" aria-pressed="${cal === v}">${esc(label)}</button>`)
+        .join("")}
+    </div>`;
+    popover.innerHTML = toggle + months
       .map((m) => {
         const first = toISO(m);
         const lead = m.getDay();
@@ -65,6 +72,11 @@ export function createCalendar(button, popover, { model, onPick }) {
   popover.setAttribute("aria-label", t.pickDate);
   button.addEventListener("click", () => (open ? hide() : show()));
   popover.addEventListener("click", (e) => {
+    const c = e.target.closest("[data-cal]");
+    if (c) {
+      if (c.getAttribute("aria-pressed") !== "true") onCalendar(c.dataset.cal);
+      return;
+    }
     const b = e.target.closest("[data-date]");
     if (!b) return;
     onPick(b.dataset.date);

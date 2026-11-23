@@ -8,7 +8,8 @@ including the winter break, the K-pack mock exam, the Common Test and self-scori
 - Three views: a timeline of your subjects (scroll sideways), a week and a day.
 - The strip of ticks above the views covers the whole term. Hover or drag to move through it.
 - Japanese UI by default; English when the browser's language isn't Japanese.
-  Dates follow the device's calendar setting (e.g. 令和8年).
+  Dates follow the device's calendar setting (e.g. 令和8年) where the browser exposes it.
+  Safari doesn't, so the date picker has a 西暦／和暦 (Gregorian / Japanese era) switch.
 - Follows light and dark mode.
 - Works offline and can be added to the Home Screen. When the timetable data changes,
   open copies show an **Update** button.
@@ -31,6 +32,7 @@ https://igarinpiano.github.io/pre-tokuhen/?class=3&division=l&soc-bckl=pol
 | `sci-ab` | `chem-b`, `bio-b`, `earth-b` |
 | `sci-bc` | `bio-b`, `earth-b` |
 | `lang` | `ja` or `en` (optional; overrides the browser language) |
+| `cal` | `japanese` or `gregory` (optional; set by the 西暦／和暦 switch in the date picker) |
 
 Without settings, the week and day views list every class and division.
 
@@ -100,3 +102,7 @@ Then open http://localhost:8000/. There is no build step.
 
 In the repository settings, open **Pages** and choose **Deploy from a branch**,
 branch `main`, folder `/ (root)`.
+
+## License
+
+Copyright 2026 Igarin. Licensed under the [Apache License 2.0](LICENSE); see also [NOTICE](NOTICE).

@@ -1,0 +1,16 @@
+Tokuhen Timetable
+Copyright 2026 Igarin
+
+This product is licensed under the Apache License, Version 2.0.
+See the LICENSE file for the full terms.
+
+https://github.com/igarinpiano/pre-tokuhen
+
+Third-party resources
+---------------------
+
+BIZ UDPGothic
+  Loaded at runtime from Google Fonts; not included in this repository.
+  Copyright The BIZ UDGothic Project Authors.
+  Licensed under the SIL Open Font License, Version 1.1.
+  https://github.com/googlefonts/morisawa-biz-ud-gothic

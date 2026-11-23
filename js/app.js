@@ -2,7 +2,7 @@ import { forcedLang, lang, t } from "./i18n.js";
 import { config } from "./config.js";
 import { icons } from "./icons.js";
 import { Model } from "./model.js";
-import { addDays, formatLong, formatUpdated, todayISO } from "./format.js";
+import { addDays, detectedCalendar, formatLong, formatUpdated, getCalendar, setCalendar, todayISO } from "./format.js";
 import { createScrubber } from "./scrubber.js";
 import { createCalendar } from "./calendar.js";
 import { esc, renderDay, renderTimeline, renderWeek } from "./views.js";
@@ -130,7 +130,7 @@ function readSelection() {
   state.sel.division = /^[abcklmno]$/.test(d) ? d : null;
   state.sel.electives = {};
   for (const [k, v] of source) {
-    if (k !== "class" && k !== "division" && k !== "lang") state.sel.electives[k] = v.toLowerCase();
+    if (!["class", "division", "lang", "cal"].includes(k)) state.sel.electives[k] = v.toLowerCase();
   }
 }
 
@@ -150,6 +150,8 @@ function queryString() {
     if (state.sel.electives[k]) p.set(k, state.sel.electives[k]);
   }
   if (forcedLang) p.set("lang", forcedLang);
+  // Keep a calendar the browser could not detect, so bookmarks and Home Screen apps remember it.
+  if (getCalendar() !== detectedCalendar) p.set("cal", getCalendar());
   return p.toString();
 }
 
@@ -307,7 +309,7 @@ function updateReport() {
   if (state.sel.division) p.set("division", state.sel.division.toUpperCase());
   const a = $("report-btn");
   a.href = `${config.repo}/issues/new?${p}`;
-  a.innerHTML = `${icons.flag(16)}<span>${esc(t.report)}</span>`;
+  a.innerHTML = `${icons.flag(16)}<span class="report-text"><span>${esc(t.report)}</span><small>${esc(t.reportNote)}</small></span>`;
 }
 
 /* ---------- Views ---------- */
@@ -392,13 +394,24 @@ function build() {
   const fresh = old.cloneNode(false);
   old.replaceWith(fresh);
   scrubber = createScrubber(fresh, { model, days, onPick: (d) => setDate(d) });
-  if (!calendar) calendar = createCalendar($("date-btn"), $("calendar"), { model, onPick: (d) => setDate(d) });
+  if (!calendar) {
+    calendar = createCalendar($("date-btn"), $("calendar"), {
+      model,
+      onPick: (d) => setDate(d),
+      onCalendar: (c) => {
+        setCalendar(c);
+        build();
+        writeURL();
+      },
+    });
+  }
 
   renderPickers();
   renderSetupHint();
   renderShortcutButton();
   renderTabs();
   $("updated").textContent = model.data.updated ? t.updated(formatUpdated(model.data.updated)) : "";
+  $("copyright").innerHTML = `© 2026 Igarin. <a href="${esc(config.repo)}/blob/main/LICENSE" target="_blank" rel="noopener">${esc(t.license)}</a>`;
   setDate(state.date, { scroll: false });
   renderView();
 }
