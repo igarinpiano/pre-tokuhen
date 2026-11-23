@@ -83,6 +83,30 @@ node scripts/validate.mjs
 
 The same check runs on GitHub for every push and pull request that touches the data.
 
+### Cross-checking against other transcriptions
+
+`scripts/compare-sources.mjs` compares this data with other copies of the timetable typed in
+independently, to catch reading mistakes:
+
+```
+node scripts/compare-sources.mjs
+```
+
+By default it reads `comparison/個人時間割表.html` and `https://legrs.github.io/pre_tokuhen/js.js`
+(`--gemini <file>` and `--legrs <file or URL>` point it elsewhere; `--all` lists agreeing cells
+too). Every source is reduced to one subject per date, period block and class (120-minute
+blocks) or division (55-minute blocks), and every cell where the sources disagree is listed
+with the majority value. A majority is only a hint: check each listed cell against the printed
+timetable.
+
+It also runs two checks that need only one source:
+
+- Over the whole term, every class has the same number of Japanese, Math ①, Math ②, English and
+  LHR blocks, so one misread 120-minute cell breaks the tie.
+- 55-minute cells repeat weekly, so a cell that differs from the same weekday, period and
+  division in other weeks is listed (the shaded changes in the final week show up here and are
+  marked as such).
+
 ## Where the text lives
 
 | What | File |
