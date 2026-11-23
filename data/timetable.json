@@ -29,8 +29,8 @@
   },
   "dayTypes": {
     "a": {
-      "ja": "A特",
-      "en": "A-toku"
+      "ja": "午前特",
+      "en": "AM-toku"
     },
     "p": {
       "ja": "P特",

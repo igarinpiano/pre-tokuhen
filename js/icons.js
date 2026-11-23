@@ -6,8 +6,8 @@ export const icons = {
   // App mark: a timetable grid where one lesson spans two periods.
   logo: (size = 28) =>
     `<svg class="logo" width="${size}" height="${size}" viewBox="0 0 32 32" aria-hidden="true">
-      <rect x="1" y="1" width="30" height="30" rx="8" fill="var(--board)"/>
-      <g fill="var(--chalk)">
+      <rect x="1" y="1" width="30" height="30" rx="8" fill="var(--ink)"/>
+      <g fill="var(--bg)">
         <rect x="7" y="7" width="5" height="5" rx="1.5" opacity=".45"/>
         <rect x="13.5" y="7" width="5" height="11.5" rx="1.5"/>
         <rect x="20" y="7" width="5" height="5" rx="1.5" opacity=".45"/>
@@ -20,9 +20,12 @@ export const icons = {
     svg(`<rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/>`, s),
   left: (s) => svg(`<path d="M14.5 6l-6 6 6 6"/>`, s),
   right: (s) => svg(`<path d="M9.5 6l6 6-6 6"/>`, s),
-  // Generic "automation" glyph: a card with a play triangle.
-  shortcut: (s) =>
-    svg(`<rect x="3.5" y="3.5" width="17" height="17" rx="5"/><path d="M10 8.5v7l5.5-3.5z" fill="currentColor" stroke="none"/>`, s),
+  // Two stacked rounded diamonds; the upper one sits in front.
+  shortcut: (s = 20) =>
+    `<svg class="icon" width="${s}" height="${s}" viewBox="0 0 24 24" aria-hidden="true">
+      <rect x="6.5" y="9.3" width="11" height="11" rx="3" transform="rotate(45 12 14.8)" fill="currentColor" opacity=".38"/>
+      <rect x="6.5" y="3.7" width="11" height="11" rx="3" transform="rotate(45 12 9.2)" fill="currentColor"/>
+    </svg>`,
   flag: (s) => svg(`<path d="M5 21V4.5M5 4.5h11l-2 4 2 4H5"/>`, s),
   link: (s) =>
     svg(`<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/>`, s),

@@ -48,7 +48,7 @@ Everything the site shows comes from [`data/timetable.json`](data/timetable.json
   - `by` — `"class"` (cells `"1"`–`"8"`) or `"division"` (cells `"a"`…`"o"`).
   - `cells` — subject id for each class or division.
   - `changed` — cells that differ from the usual timetable (shown with a mark).
-  - `type` — `"a"` or `"p"` for A特 / P特 days.
+  - `type` — `"a"` for 午前特 (AM-toku) days, `"p"` for P特 days.
 - `subjects` — names (`ja`, `en`), short labels for the timeline, and color group.
 - `electives` — the choices for each elective subject.
 - `events` — all-day events with a note.
