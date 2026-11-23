@@ -12,7 +12,9 @@ including the winter break, the K-pack mock exam, the Common Test and self-scori
   Safari doesn't, so the date picker has a 西暦／和暦 (Gregorian / Japanese era) switch.
 - Keyboard friendly, including with Vimium: every control is a real button or select (so link
   hints reach them), the timeline has previous/next week buttons, and the date strip moves by
-  a day with the arrow keys once focused.
+  a day with the arrow keys once focused. With a mouse or trackpad the timeline scrolls the page
+  itself sideways, so Vimium's `h` / `l` (and the arrow keys) move it; touch screens keep an
+  inner scroll area.
 - Follows light and dark mode.
 - Works offline and can be added to the Home Screen. When the timetable data changes,
   open copies show an **Update** button.
