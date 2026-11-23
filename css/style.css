@@ -832,11 +832,8 @@ html.tl-page-scroll .tl-grid {
     backdrop-filter: blur(14px);
     border-top: 1px solid var(--line);
   }
-  /* iPhone Safari draws its toolbar over the bottom of the page; keep the ticks above it. */
-  html.ios-browser .scrubber { padding-bottom: calc(env(safe-area-inset-bottom) + 62px); }
   .scrub-bubble { top: 0; }
   .scrub-today { top: 6px; }
   .view-head .stepper { display: none; }
   body { padding-bottom: calc(env(safe-area-inset-bottom) + 96px); }
-  html.ios-browser body { padding-bottom: calc(env(safe-area-inset-bottom) + 152px); }
 }
