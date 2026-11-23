@@ -506,6 +506,8 @@ html.tl-page-scroll .tl-grid {
 }
 .tl-date:hover { text-decoration: underline; text-underline-offset: 3px; }
 .tl-date.is-today { color: var(--today); }
+.tl-date.is-selected { box-shadow: inset 0 -3px 0 var(--ink), var(--hov, 0 0 #0000); }
+.tl-date.is-today.is-selected { box-shadow: inset 0 3px 0 -1px var(--today), inset 0 -3px 0 var(--ink), var(--hov, 0 0 #0000); }
 .tl-period { font-size: 11px; color: var(--muted); text-align: center; line-height: var(--h2); }
 .tl-period.is-first, .tl-periods { border-left: 1px solid var(--line); }
 .tl-bg {
@@ -561,7 +563,7 @@ html.tl-page-scroll .tl-grid {
 }
 
 /* Week */
-.wk-scroll { overflow-x: auto; padding-bottom: 4px; }
+.wk-scroll { overflow-x: auto; padding: 4px; margin: -4px; }
 .wk-grid {
   display: grid;
   grid-template-rows: auto repeat(6, minmax(58px, auto));
@@ -582,7 +584,10 @@ html.tl-page-scroll .tl-grid {
   flex-wrap: wrap;
 }
 .wk-date:hover { background: var(--surface); border-radius: var(--btn-radius) var(--btn-radius) 0 0; }
-.wk-date.is-selected { border-bottom-color: var(--accent); }
+.wk-date.is-selected { border-bottom-color: var(--ink); }
+/* The selected day: its whole column sits on a framed panel behind the cells. */
+.wk-colbg { margin: -3px; border-radius: calc(var(--btn-radius) + 2px); pointer-events: none; }
+.wk-colbg.is-selected { background: var(--surface); box-shadow: inset 0 0 0 2px var(--ink); }
 .wk-date.is-today { color: var(--today); }
 .wk-period { font-size: 12px; color: var(--muted); text-align: center; padding-top: 8px; }
 .wk-cell {
@@ -810,4 +815,40 @@ html.tl-page-scroll .tl-grid {
 
 @media (prefers-reduced-motion: reduce) {
   .tick::after, .scrub-range { transition: none; }
+}
+
+/* ---------- Bottom ‹ › bar on phones ---------- */
+
+.bottom-nav { display: none; }
+
+@media (max-width: 640px), (hover: none) and (pointer: coarse) {
+  .bottom-nav {
+    display: flex;
+    justify-content: space-between;
+    position: fixed;
+    left: 16px;
+    right: 16px;
+    bottom: calc(env(safe-area-inset-bottom) + 12px);
+    z-index: 40;
+    pointer-events: none;
+  }
+  html.ios-browser .bottom-nav { bottom: calc(env(safe-area-inset-bottom) + 68px); }
+  .bottom-nav-btn {
+    pointer-events: auto;
+    display: grid;
+    place-items: center;
+    width: 56px;
+    height: 56px;
+    border: 1px solid var(--line);
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--bg) 88%, transparent);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+    box-shadow: 0 6px 20px -8px rgb(0 0 0 / 0.35);
+    color: var(--ink);
+  }
+  .bottom-nav-btn:disabled { opacity: 0.3; }
+  .view-head .stepper { display: none; }
+  body { padding-bottom: calc(env(safe-area-inset-bottom) + 84px); }
+  html.ios-browser body { padding-bottom: calc(env(safe-area-inset-bottom) + 140px); }
 }

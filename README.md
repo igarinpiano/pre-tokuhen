@@ -10,6 +10,9 @@ including the winter break, the K-pack mock exam, the Common Test and self-scori
 - Japanese UI by default; English when the browser's language isn't Japanese.
   Dates follow the device's calendar setting (e.g. 令和8年) where the browser exposes it.
   Safari doesn't, so the date picker has a 西暦／和暦 (Gregorian / Japanese era) switch.
+- Arrow keys: ← / → move by a school day in every view (Shift+← / → by a week), and Return
+  opens the selected day from the week or timeline view. On phones, two large ‹ › buttons at
+  the bottom of the screen do the same as the view's previous/next buttons.
 - Keyboard friendly: every control is a real button or select (so Vimium's link hints reach
   them), the timeline has previous/next week buttons, and the date strip moves by a day with the
   arrow keys once focused. Add `vimium=1` to the address to make the timeline scroll the page

@@ -251,6 +251,9 @@ export function renderTimeline(root, ctx) {
       pos.by(h.getBoundingClientRect().left - labelRight(), smooth);
       requestAnimationFrame(report);
     },
+    mark(date) {
+      headers.forEach((h) => h.classList.toggle("is-selected", h.dataset.date === date));
+    },
     destroy() {
       ro.disconnect();
       scrollTarget.removeEventListener("scroll", onScroll);
@@ -288,11 +291,15 @@ export function renderWeek(root, ctx) {
   }
   days.forEach((d, i) => {
     const c = i + 2;
+    parts.push(`<div class="wk-colbg${d === date ? " is-selected" : ""}" style="grid-row:1/8;grid-column:${c}" aria-hidden="true"></div>`);
+  });
+  days.forEach((d, i) => {
+    const c = i + 2;
     const type = model.dayType(d);
     const cls = ["wk-date"];
     if (d === today) cls.push("is-today");
     if (d === date) cls.push("is-selected");
-    parts.push(`<button type="button" class="${cls.join(" ")}" data-date="${d}" style="grid-row:1;grid-column:${c}">
+    parts.push(`<button type="button" class="${cls.join(" ")}" data-date="${d}" ${d === date ? 'aria-current="date"' : ""} style="grid-row:1;grid-column:${c}">
       <span>${esc(formatShort(d))}</span>${type ? `<span class="daytype">${esc(type)}</span>` : ""}</button>`);
     const ev = model.event(d);
     if (ev) {
