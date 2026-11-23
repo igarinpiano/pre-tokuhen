@@ -530,8 +530,4 @@ if ("serviceWorker" in navigator && (location.protocol === "https:" || location.
 }
 
 document.documentElement.dataset.lang = lang;
-// iPhone/iPad Safari (not the Home Screen app) draws its toolbar over the bottom of the page.
-if (/iPhone|iPad|iPod/.test(navigator.userAgent) || (/Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1)) {
-  if (!isStandalone) document.documentElement.classList.add("ios-browser");
-}
 boot();
