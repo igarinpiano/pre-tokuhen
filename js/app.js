@@ -98,10 +98,14 @@ function applyData(text, keepPosition = false) {
 async function boot() {
   $("logo").innerHTML = icons.logo(28);
   $("app-title").textContent = t.appTitle;
-  window.addEventListener("resize", fitMasthead);
-  // The web font is wider than the fallback, so measure again once it has loaded.
-  document.fonts?.ready.then(fitMasthead);
-  document.fonts?.addEventListener?.("loadingdone", fitMasthead);
+  $("title-full").textContent = t.appTitle;
+  $("title-short").textContent = t.appTitleShort;
+  // Size changes of the header, the date button or the title text (zoom, text size, web font).
+  const ro = new ResizeObserver(scheduleFit);
+  for (const el of [document.querySelector(".masthead-row"), document.querySelector(".masthead-actions"), $("title-full")]) ro.observe(el);
+  window.addEventListener("resize", scheduleFit);
+  phoneLayout.addEventListener?.("change", scheduleFit);
+  document.fonts?.ready.then(scheduleFit);
   document.title = t.appTitle;
   readSelection();
 
@@ -483,21 +487,42 @@ function defaultDate() {
   return model.nextEntry(today);
 }
 
-// Keep the title and the date button on one line: when they don't fit, shorten the title
-// (前期特編 時間割 → 前期特編); if even that is too long, the title is cut with an ellipsis.
+// Keep the title and the date button on one line: show the full title, the short one
+// (前期特編) or only the logo, whichever fits. The choice is recomputed from scratch, from hidden
+// copies of both titles, whenever the header or anything in it changes size (window resizes,
+// browser zoom, text-size changes, the web font arriving), so it never gets stuck.
+const phoneLayout = window.matchMedia("(max-width: 640px), (hover: none) and (pointer: coarse)");
 function fitMasthead() {
   // On phones the Shortcut button sits next to the settings button, leaving room for the date.
   const btn = $("shortcut-btn");
   const home = phoneLayout.matches ? $("settings-row") : document.querySelector(".masthead-actions");
   if (btn.parentElement !== home) home.append(btn);
+
+  const row = document.querySelector(".masthead-row");
+  const brand = document.querySelector(".brand");
+  const actions = document.querySelector(".masthead-actions");
+  const gap = (el) => parseFloat(getComputedStyle(el).columnGap) || 0;
+  // Measure everything with getBoundingClientRect so zoomed and unzoomed sizes never mix.
+  const width = (el) => el.getBoundingClientRect().width;
+  const scale = width(row) / (row.clientWidth || 1); // CSS zoom factor, if any
+  const room = width(row) - width(actions) - (gap(row) + gap(brand)) * scale - width($("logo"));
   const title = $("app-title");
-  const cut = () => title.scrollWidth > title.clientWidth + 1;
-  title.hidden = false;
-  title.textContent = t.appTitle;
-  if (cut()) title.textContent = t.appTitleShort;
-  if (cut()) title.hidden = true; // logo only; the page title still names the site
+  const fits = (el) => el.getBoundingClientRect().width <= room + 0.5;
+  if (fits($("title-full"))) {
+    title.textContent = t.appTitle;
+    title.hidden = false;
+  } else if (fits($("title-short"))) {
+    title.textContent = t.appTitleShort;
+    title.hidden = false;
+  } else {
+    title.hidden = true; // logo only; the page title still names the site
+  }
 }
-const phoneLayout = window.matchMedia("(max-width: 640px), (hover: none) and (pointer: coarse)");
+let fitFrame = 0;
+const scheduleFit = () => {
+  cancelAnimationFrame(fitFrame);
+  fitFrame = requestAnimationFrame(fitMasthead);
+};
 
 function showDate(date) {
   $("date-btn").innerHTML = `${icons.calendar(18)}<span>${esc(formatLong(date))}</span>`;
