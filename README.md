@@ -10,6 +10,9 @@ including the winter break, the K-pack mock exam, the Common Test and self-scori
 - Japanese UI by default; English when the browser's language isn't Japanese.
   Dates follow the device's calendar setting (e.g. 令和8年) where the browser exposes it.
   Safari doesn't, so the date picker has a 西暦／和暦 (Gregorian / Japanese era) switch.
+- Keyboard friendly, including with Vimium: every control is a real button or select (so link
+  hints reach them), the timeline has previous/next week buttons, and the date strip moves by
+  a day with the arrow keys once focused.
 - Follows light and dark mode.
 - Works offline and can be added to the Home Screen. When the timetable data changes,
   open copies show an **Update** button.

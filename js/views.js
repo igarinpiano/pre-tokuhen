@@ -144,7 +144,15 @@ export function renderTimeline(root, ctx) {
     }
   });
 
-  root.innerHTML = `<div class="tl-scroll" tabindex="0">
+  root.innerHTML = `
+    <div class="view-head">
+      <h2 class="view-title tl-range" aria-live="polite"></h2>
+      <div class="stepper">
+        <button type="button" class="icon-btn" data-step="-1" aria-label="${esc(t.prevWeek)}">${icons.left()}</button>
+        <button type="button" class="icon-btn" data-step="1" aria-label="${esc(t.nextWeek)}">${icons.right()}</button>
+      </div>
+    </div>
+    <div class="tl-scroll" tabindex="0" aria-label="${esc(t.viewTimeline)}">
       <div class="tl-grid" style="grid-template-columns:${cols.join(" ")};grid-template-rows:var(--h1) var(--h2) repeat(${rows.length}, var(--rh))">${parts.join("")}</div>
     </div>
     <style class="tl-hover-style"></style>`;
@@ -173,11 +181,34 @@ export function renderTimeline(root, ctx) {
   const labelWidth = () => root.querySelector(".tl-label")?.offsetWidth || 0;
 
   let raf = 0;
+  const rangeTitle = root.querySelector(".tl-range");
+  const prevBtn = root.querySelector('[data-step="-1"]');
+  const nextBtn = root.querySelector('[data-step="1"]');
+  let firstVisible = model.first;
+  // Week steps, so the timeline can be moved with buttons (and keyboard tools like Vimium).
+  root.querySelector(".stepper").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-step]");
+    if (!b) return;
+    const mon = mondayOf(firstVisible);
+    const target =
+      Number(b.dataset.step) > 0
+        ? model.nextEntry(addDays(mon, 7))
+        : model.nextEntry(mondayOf(model.prevEntry(addDays(mon, -1))));
+    ctx.onSelect(target);
+  });
+
   const report = () => {
     const left = scroller.scrollLeft + labelWidth();
     const right = scroller.scrollLeft + scroller.clientWidth;
     const visible = headers.filter((h) => h.offsetLeft + h.offsetWidth * 0.5 >= left && h.offsetLeft + h.offsetWidth * 0.5 <= right);
-    if (visible.length) ctx.onVisibleRange(visible[0].dataset.date, visible[visible.length - 1].dataset.date);
+    if (!visible.length) return;
+    const a = visible[0].dataset.date;
+    const b = visible[visible.length - 1].dataset.date;
+    firstVisible = a;
+    rangeTitle.textContent = a === b ? formatMedium(a) : `${formatMedium(a)} – ${formatMedium(b)}`;
+    prevBtn.disabled = scroller.scrollLeft <= 0;
+    nextBtn.disabled = scroller.scrollLeft + scroller.clientWidth >= scroller.scrollWidth - 1;
+    ctx.onVisibleRange(a, b);
   };
   scroller.addEventListener("scroll", () => {
     cancelAnimationFrame(raf);

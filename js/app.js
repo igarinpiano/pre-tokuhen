@@ -178,30 +178,51 @@ function selectHTML(id, label, options, value) {
   </label>`;
 }
 
+// The pickers are built once and then updated in place. Rebuilding a <select> while iOS is
+// closing its menu (or focusing a new one, which reopens the menu) makes iPhones pick the wrong item.
 function renderPickers() {
   const s = state.sel;
-  const parts = [
-    selectHTML("pick-class", t.classLabel, model.classes.map((c) => [c, t.classOption(c)]), s.class),
-    selectHTML("pick-division", t.divisionLabel, model.divisions.map((d) => [d, t.divisionOption(d.toUpperCase())]), s.division),
-  ];
-  for (const id of model.electivesFor(s.division)) {
-    parts.push(
-      selectHTML(`pick-${id}`, model.abbr(id), model.electives[id].map((o) => [o, model.name(o)]), s.electives[id] || null),
-    );
-  }
   const box = $("pickers");
-  box.innerHTML = parts.join("");
-  box.querySelector("#pick-class").addEventListener("change", (e) => updateSel({ class: e.target.value || null }));
-  box.querySelector("#pick-division").addEventListener("change", (e) => updateSel({ division: e.target.value || null }));
-  for (const id of model.electivesFor(s.division)) {
-    box.querySelector(`#pick-${id}`).addEventListener("change", (e) => {
-      const electives = { ...state.sel.electives };
-      if (e.target.value) electives[id] = e.target.value;
-      else delete electives[id];
-      updateSel({ electives });
-    });
+  if (!$("pick-class")) {
+    box.innerHTML = [
+      selectHTML("pick-class", t.classLabel, model.classes.map((c) => [c, t.classOption(c)]), s.class),
+      selectHTML("pick-division", t.divisionLabel, model.divisions.map((d) => [d, t.divisionOption(d.toUpperCase())]), s.division),
+      `<span class="pickers" id="pick-electives"></span>`,
+    ].join("");
   }
+  setPicker("pick-class", s.class);
+  setPicker("pick-division", s.division);
+
+  const ids = model.electivesFor(s.division);
+  const holder = $("pick-electives");
+  if (holder.dataset.ids !== ids.join(",")) {
+    holder.dataset.ids = ids.join(",");
+    holder.innerHTML = ids
+      .map((id) => selectHTML(`pick-${id}`, model.abbr(id), model.electives[id].map((o) => [o, model.name(o)]), s.electives[id] || null))
+      .join("");
+  }
+  for (const id of ids) setPicker(`pick-${id}`, s.electives[id] || null);
 }
+
+function setPicker(id, value) {
+  const el = $(id);
+  if (!el) return;
+  if (el.value !== (value || "")) el.value = value || "";
+  el.closest(".picker").classList.toggle("is-set", Boolean(value));
+}
+
+$("pickers").addEventListener("change", (e) => {
+  const id = e.target.id;
+  if (id === "pick-class") updateSel({ class: e.target.value || null });
+  else if (id === "pick-division") updateSel({ division: e.target.value || null });
+  else if (id.startsWith("pick-")) {
+    const key = id.slice(5);
+    const electives = { ...state.sel.electives };
+    if (e.target.value) electives[key] = e.target.value;
+    else delete electives[key];
+    updateSel({ electives });
+  }
+});
 
 function updateSel(patch) {
   const hadPersonal = state.sel.class && state.sel.division;
@@ -215,10 +236,6 @@ function updateSel(patch) {
   renderTabs();
   renderView();
   updateReport();
-  // Keep keyboard focus on the picker that was just changed.
-  const key = Object.keys(patch)[0];
-  const focusId = key === "electives" ? null : `pick-${key}`;
-  if (focusId) $(focusId)?.focus();
 }
 
 function renderSetupHint() {
@@ -275,7 +292,10 @@ function openShortcutDialog() {
     <h3>${esc(t.shortcutSettings)}</h3>
     <dl class="kv">${rows.map(([k, v]) => `<dt><code>${esc(k)}</code></dt><dd><code>${esc(v)}</code></dd>`).join("")}</dl>
     <h3>${esc(t.shortcutData)}</h3>
-    <p><code class="url">${esc(config.dataUrl)}</code></p>
+    <div class="url-row">
+      <code class="url">${esc(config.dataUrl)}</code>
+      <button type="button" class="text-btn" data-copy-url>${icons.link(16)}<span>${esc(t.copyLink)}</span></button>
+    </div>
     <div class="sheet-actions">
       ${
         config.shortcutUrl
@@ -285,6 +305,15 @@ function openShortcutDialog() {
       <a class="text-btn" href="${esc(config.shortcutGuide)}" target="_blank" rel="noopener">${esc(t.shortcutHowTo)}</a>
     </div>`;
   dlg.querySelector("[data-close]").addEventListener("click", () => dlg.close());
+  dlg.querySelector("[data-copy-url]").addEventListener("click", async (e) => {
+    const btn = e.currentTarget;
+    try {
+      await navigator.clipboard.writeText(config.dataUrl);
+      btn.querySelector("span").textContent = t.copied;
+    } catch {
+      prompt(t.copyLink, config.dataUrl);
+    }
+  });
   dlg.showModal();
 }
 
@@ -438,9 +467,22 @@ $("view-tabs").addEventListener("keydown", (e) => {
   $("view-tabs").querySelector(`[data-view="${next}"]`).focus();
 });
 $("shortcut-btn").addEventListener("click", openShortcutDialog);
-$("shortcut-dialog").addEventListener("click", (e) => {
-  if (e.target === e.currentTarget) e.currentTarget.close();
-});
+// Close the dialog only when a press both starts and ends on the backdrop. A text selection
+// that is dragged and released over the dialog's own padding also targets the dialog element.
+{
+  const dlg = $("shortcut-dialog");
+  const onBackdrop = (e) => {
+    if (e.target !== dlg) return false;
+    const r = dlg.getBoundingClientRect();
+    return e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom;
+  };
+  let pressedOutside = false;
+  dlg.addEventListener("pointerdown", (e) => (pressedOutside = onBackdrop(e)));
+  dlg.addEventListener("click", (e) => {
+    if (pressedOutside && onBackdrop(e)) dlg.close();
+    pressedOutside = false;
+  });
+}
 
 if ("serviceWorker" in navigator && location.protocol === "https:") {
   navigator.serviceWorker.register("sw.js").catch(() => {});
