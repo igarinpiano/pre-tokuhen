@@ -133,7 +133,10 @@ a { color: inherit; }
   min-width: 0;
 }
 .brand #logo { display: flex; }
-.brand #app-title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.brand { position: relative; }
+.brand #app-title { white-space: nowrap; }
+/* Hidden copies of the full and short titles, used only to measure how wide they would be. */
+.title-measure { position: absolute; left: 0; top: 0; visibility: hidden; white-space: nowrap; pointer-events: none; }
 
 .masthead-actions { display: flex; align-items: center; gap: 8px; flex: none; }
 .date-wrap { position: relative; }
