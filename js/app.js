@@ -27,6 +27,8 @@ const store = {
 };
 
 const isApple = /iPhone|iPad|iPod|Macintosh/.test(navigator.userAgent);
+// ?vimium=1: the timeline scrolls the page sideways so Vimium's h/l keys can move it.
+const vimiumMode = ["1", "true", "on"].includes((new URLSearchParams(location.search).get("vimium") || "").toLowerCase());
 const isStandalone =
   window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
 
@@ -130,7 +132,7 @@ function readSelection() {
   state.sel.division = /^[abcklmno]$/.test(d) ? d : null;
   state.sel.electives = {};
   for (const [k, v] of source) {
-    if (!["class", "division", "lang", "cal"].includes(k)) state.sel.electives[k] = v.toLowerCase();
+    if (!["class", "division", "lang", "cal", "vimium"].includes(k)) state.sel.electives[k] = v.toLowerCase();
   }
 }
 
@@ -150,6 +152,7 @@ function queryString() {
     if (state.sel.electives[k]) p.set(k, state.sel.electives[k]);
   }
   if (forcedLang) p.set("lang", forcedLang);
+  if (vimiumMode) p.set("vimium", "1");
   // Keep a calendar the browser could not detect, so bookmarks and Home Screen apps remember it.
   if (getCalendar() !== detectedCalendar) p.set("cal", getCalendar());
   return p.toString();
@@ -378,6 +381,7 @@ function renderView() {
   root.className = `view view-${state.view}`;
   const ctx = {
     model,
+    pageScroll: vimiumMode,
     sel: state.sel,
     date: state.date,
     onSelect: (d) => setDate(d),
