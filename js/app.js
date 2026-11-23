@@ -184,7 +184,7 @@ function renderPickers() {
   ];
   for (const id of model.electivesFor(s.division)) {
     parts.push(
-      selectHTML(`pick-${id}`, model.name(id), model.electives[id].map((o) => [o, model.name(o)]), s.electives[id] || null),
+      selectHTML(`pick-${id}`, model.abbr(id), model.electives[id].map((o) => [o, model.name(o)]), s.electives[id] || null),
     );
   }
   const box = $("pickers");

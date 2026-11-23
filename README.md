@@ -50,7 +50,7 @@ Everything the site shows comes from [`data/timetable.json`](data/timetable.json
   - `cells` — subject id for each class or division.
   - `changed` — cells that differ from the usual timetable (shown with a mark).
   - `type` — `"a"` for 午前特 (AM-toku) days, `"p"` for 午後特 (PM-toku) days.
-- `subjects` — names (`ja`, `en`), short labels for the timeline, and color group.
+- `subjects` — names (`ja`, `en`), optional shorter names for tight spaces (`abbr`, e.g. the timeline's row labels), one- or two-letter labels for timeline cells (`short`), and color group.
 - `electives` — the choices for each elective subject.
 - `events` — all-day events with a note.
 - `bells` — period times. `null` until published; then, for example:
@@ -77,7 +77,7 @@ The same check runs on GitHub for every push and pull request that touches the d
 
 | What | File |
 | --- | --- |
-| Subject and event names (Japanese and English) | `data/timetable.json` → `subjects`, `events`, `dayTypes` |
+| Subject and event names (Japanese and English) | `data/timetable.json` → `subjects` (`ja`, `en`, `abbr`, `short`), `events`, `dayTypes` |
 | Interface text (Japanese and English) | `js/i18n.js` |
 | Repository, data and Shortcut links | `js/config.js` |
 

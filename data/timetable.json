@@ -92,6 +92,7 @@
     "soc-abn": {
       "ja": "社会ABN",
       "en": "Social Studies ABN",
+      "abbr": {"en": "Soc. ABN"},
       "short": {"ja": "社", "en": "Soc"},
       "group": "social",
       "combined": true,
@@ -100,6 +101,7 @@
     "soc-bckl": {
       "ja": "社会BCKL",
       "en": "Social Studies BCKL",
+      "abbr": {"en": "Soc. BCKL"},
       "short": {"ja": "社", "en": "Soc"},
       "group": "social",
       "combined": true,
@@ -108,6 +110,7 @@
     "geo-pol": {
       "ja": "地理／政経",
       "en": "Geography / Politics & Economics",
+      "abbr": {"en": "Geo. / P&E"},
       "short": {"ja": "地政", "en": "G/P"},
       "group": "social",
       "combined": true,
@@ -116,6 +119,7 @@
     "jh": {
       "ja": "日本史",
       "en": "Japanese History",
+      "abbr": {"en": "Jpn. History"},
       "short": {"ja": "日", "en": "JH"},
       "group": "social"
     },
@@ -134,12 +138,14 @@
     "pol": {
       "ja": "政経",
       "en": "Politics & Economics",
+      "abbr": {"en": "Pol. & Econ."},
       "short": {"ja": "政", "en": "P&E"},
       "group": "social"
     },
     "sci-ab": {
       "ja": "理科基礎AB",
       "en": "Basic Science AB",
+      "abbr": {"en": "Sci. AB"},
       "short": {"ja": "理基", "en": "Sci"},
       "group": "science",
       "combined": true,
@@ -148,6 +154,7 @@
     "sci-bc": {
       "ja": "理科基礎BC",
       "en": "Basic Science BC",
+      "abbr": {"en": "Sci. BC"},
       "short": {"ja": "理基", "en": "Sci"},
       "group": "science",
       "combined": true,
@@ -156,18 +163,21 @@
     "chem-b": {
       "ja": "化学基礎",
       "en": "Basic Chemistry",
+      "abbr": {"en": "Basic Chem."},
       "short": {"ja": "化基", "en": "ChB"},
       "group": "science"
     },
     "bio-b": {
       "ja": "生物基礎",
       "en": "Basic Biology",
+      "abbr": {"en": "Basic Bio."},
       "short": {"ja": "生基", "en": "BiB"},
       "group": "science"
     },
     "earth-b": {
       "ja": "地学基礎",
       "en": "Basic Earth Science",
+      "abbr": {"en": "Basic Earth"},
       "short": {"ja": "地基", "en": "EaB"},
       "group": "science"
     },
@@ -192,6 +202,7 @@
     "info": {
       "ja": "情報",
       "en": "Information",
+      "abbr": {"en": "Info."},
       "short": {"ja": "情", "en": "Inf"},
       "group": "info"
     },
