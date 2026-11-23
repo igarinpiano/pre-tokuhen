@@ -10,11 +10,10 @@ including the winter break, the K-pack mock exam, the Common Test and self-scori
 - Japanese UI by default; English when the browser's language isn't Japanese.
   Dates follow the device's calendar setting (e.g. 令和8年) where the browser exposes it.
   Safari doesn't, so the date picker has a 西暦／和暦 (Gregorian / Japanese era) switch.
-- Keyboard friendly, including with Vimium: every control is a real button or select (so link
-  hints reach them), the timeline has previous/next week buttons, and the date strip moves by
-  a day with the arrow keys once focused. With a mouse or trackpad the timeline scrolls the page
-  itself sideways, so Vimium's `h` / `l` (and the arrow keys) move it; touch screens keep an
-  inner scroll area.
+- Keyboard friendly: every control is a real button or select (so Vimium's link hints reach
+  them), the timeline has previous/next week buttons, and the date strip moves by a day with the
+  arrow keys once focused. Add `vimium=1` to the address to make the timeline scroll the page
+  sideways, so Vimium's `h` / `l` move it.
 - Follows light and dark mode.
 - Works offline and can be added to the Home Screen. When the timetable data changes,
   open copies show an **Update** button.
@@ -38,6 +37,7 @@ https://igarinpiano.github.io/pre-tokuhen/?class=3&division=l&soc-bckl=pol
 | `sci-bc` | `bio-b`, `earth-b` |
 | `lang` | `ja` or `en` (optional; overrides the browser language) |
 | `cal` | `japanese` or `gregory` (optional; set by the 西暦／和暦 switch in the date picker) |
+| `vimium` | `1` (optional; the timeline scrolls the page sideways so Vimium's `h` / `l` work) |
 
 Without settings, the week and day views list every class and division.
 

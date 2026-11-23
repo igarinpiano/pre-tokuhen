@@ -178,10 +178,10 @@ export function renderTimeline(root, ctx) {
     if (h) ctx.onOpenDay(h.dataset.date);
   });
 
-  // With a mouse or trackpad the page itself scrolls sideways (header and subject column stay
-  // put). Keyboard tools such as Vimium only scroll the page or vertical scroll areas, so this
-  // is what makes their h/l keys move the timeline. Touch screens keep an inner scroll area.
-  const pageScroll = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+  // With ?vimium=1 the page itself scrolls sideways (header and subject column stay put).
+  // Vimium only scrolls the page or vertical scroll areas, so this is what lets its h/l keys
+  // move the timeline. By default the timeline keeps its own scroll area.
+  const pageScroll = Boolean(ctx.pageScroll);
   const docEl = document.documentElement;
   docEl.classList.toggle("tl-page-scroll", pageScroll);
   const setViewportWidth = () => docEl.style.setProperty("--vw", `${docEl.clientWidth}px`);
