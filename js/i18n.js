@@ -2,6 +2,7 @@
 const STRINGS = {
   ja: {
     appTitle: "前期特編 時間割",
+    appTitleShort: "前期特編",
     classLabel: "組",
     divisionLabel: "講座",
     classOption: (c) => c,
@@ -69,6 +70,7 @@ const STRINGS = {
   },
   en: {
     appTitle: "Tokuhen Timetable",
+    appTitleShort: "Tokuhen",
     classLabel: "Class",
     divisionLabel: "Division",
     classOption: (c) => c,
