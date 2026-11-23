@@ -382,15 +382,6 @@ function openDay(date) {
   setDate(date);
 }
 
-// Mirror the current view's ‹ › buttons in the bar at the bottom of phone screens.
-function syncBottomNav() {
-  for (const btn of $("bottom-nav").querySelectorAll("[data-dir]")) {
-    const src = $("view").querySelector(`.stepper [data-step="${btn.dataset.dir}"]`);
-    btn.disabled = !src || src.disabled;
-    btn.setAttribute("aria-label", src ? src.getAttribute("aria-label") : "");
-  }
-}
-
 function renderView() {
   const root = $("view");
   timeline?.destroy();
@@ -413,7 +404,6 @@ function renderView() {
       }
       scrubber.setRange(a, b, sel);
       timeline?.mark(sel);
-      syncBottomNav();
     },
   };
   if (state.view === "timeline") {
@@ -428,7 +418,6 @@ function renderView() {
     const { range } = renderDay(root, ctx);
     scrubber.setRange(range[0], range[1], state.date);
   }
-  syncBottomNav();
 }
 
 function build() {
@@ -487,12 +476,6 @@ $("view-tabs").addEventListener("keydown", (e) => {
   $("view-tabs").querySelector(`[data-view="${next}"]`).focus();
 });
 $("shortcut-btn").addEventListener("click", openShortcutDialog);
-
-$("bottom-nav").addEventListener("click", (e) => {
-  const btn = e.target.closest("[data-dir]");
-  if (!btn) return;
-  $("view").querySelector(`.stepper [data-step="${btn.dataset.dir}"]`)?.click();
-});
 
 // Keyboard: ← → move by a school day (Shift: a week) in every view; Return opens the day view
 // from the week or timeline. Keys typed into controls with their own arrow handling are left alone.

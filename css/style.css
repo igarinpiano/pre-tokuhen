@@ -817,38 +817,26 @@ html.tl-page-scroll .tl-grid {
   .tick::after, .scrub-range { transition: none; }
 }
 
-/* ---------- Bottom ‹ › bar on phones ---------- */
-
-.bottom-nav { display: none; }
+/* ---------- Phones: the date strip sits at the bottom of the screen ---------- */
 
 @media (max-width: 640px), (hover: none) and (pointer: coarse) {
-  .bottom-nav {
-    display: flex;
-    justify-content: space-between;
+  .scrubber {
     position: fixed;
-    left: 16px;
-    right: 16px;
-    bottom: calc(env(safe-area-inset-bottom) + 12px);
+    left: 0;
+    right: 0;
+    bottom: 0;
     z-index: 40;
-    pointer-events: none;
+    padding: 26px 16px calc(env(safe-area-inset-bottom) + 6px);
+    background: color-mix(in srgb, var(--bg) 90%, transparent);
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
+    border-top: 1px solid var(--line);
   }
-  html.ios-browser .bottom-nav { bottom: calc(env(safe-area-inset-bottom) + 68px); }
-  .bottom-nav-btn {
-    pointer-events: auto;
-    display: grid;
-    place-items: center;
-    width: 56px;
-    height: 56px;
-    border: 1px solid var(--line);
-    border-radius: 50%;
-    background: color-mix(in srgb, var(--bg) 88%, transparent);
-    -webkit-backdrop-filter: blur(12px);
-    backdrop-filter: blur(12px);
-    box-shadow: 0 6px 20px -8px rgb(0 0 0 / 0.35);
-    color: var(--ink);
-  }
-  .bottom-nav-btn:disabled { opacity: 0.3; }
+  /* iPhone Safari draws its toolbar over the bottom of the page; keep the ticks above it. */
+  html.ios-browser .scrubber { padding-bottom: calc(env(safe-area-inset-bottom) + 62px); }
+  .scrub-bubble { top: 0; }
+  .scrub-today { top: 6px; }
   .view-head .stepper { display: none; }
-  body { padding-bottom: calc(env(safe-area-inset-bottom) + 84px); }
-  html.ios-browser body { padding-bottom: calc(env(safe-area-inset-bottom) + 140px); }
+  body { padding-bottom: calc(env(safe-area-inset-bottom) + 96px); }
+  html.ios-browser body { padding-bottom: calc(env(safe-area-inset-bottom) + 152px); }
 }
