@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>前期特編 時間割</title>
+    <meta name="description" content="Timetable for the third-year special program (Nov 30 – Jan 15)." />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#15201c" media="(prefers-color-scheme: dark)" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="特編" />
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="icon" href="icons/icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <div class="banner" id="update-banner" role="status" hidden></div>
+
+    <header class="masthead">
+      <div class="masthead-row">
+        <h1 class="brand"><span id="logo"></span><span id="app-title">前期特編 時間割</span></h1>
+        <div class="masthead-actions">
+          <button type="button" class="icon-btn shortcut-btn" id="shortcut-btn" hidden></button>
+          <div class="date-wrap">
+            <button type="button" class="date-btn" id="date-btn"></button>
+            <div class="calendar" id="calendar" hidden></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="controls">
+        <div class="pickers" id="pickers"></div>
+      </div>
+
+      <div class="setup-hint" id="setup-hint" hidden></div>
+
+      <div class="nav-row">
+        <div class="segmented" id="view-tabs" role="tablist"></div>
+      </div>
+
+      <div class="scrubber" id="scrubber"></div>
+    </header>
+
+    <main id="view" class="view" tabindex="-1"></main>
+
+    <footer class="foot">
+      <span id="updated"></span>
+      <a class="report-btn" id="report-btn" target="_blank" rel="noopener"></a>
+    </footer>
+
+    <dialog class="sheet" id="shortcut-dialog"></dialog>
+
+    <noscript>This timetable needs JavaScript.</noscript>
+    <script type="module" src="js/app.js"></script>
+  </body>
+</html>
