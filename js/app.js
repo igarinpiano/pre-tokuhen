@@ -364,8 +364,8 @@ function openPrintDialog() {
 }
 
 function printRange(view, from, to) {
+  endPrinting();
   const area = $("print-area");
-  area.innerHTML = "";
   const noop = () => {};
   const ctxFor = (date) => ({ model, sel: state.sel, date, onSelect: noop, onOpenDay: noop, onPrint: noop });
   const head = document.createElement("header");
@@ -389,18 +389,26 @@ function printRange(view, from, to) {
       area.append(page);
     }
   }
-  // Print on white with the week view in landscape, whatever the screen theme is.
+  // Week view in landscape. Printouts are always on white (see the print styles).
   $("print-page-style").textContent = `@page { size: A4 ${view === "week" ? "landscape" : "portrait"}; margin: 10mm; }`;
-  const root = document.documentElement;
-  const theme = root.dataset.theme;
-  root.dataset.theme = "light";
-  const restore = () => {
-    if (theme) root.dataset.theme = theme;
-    else delete root.dataset.theme;
-    area.innerHTML = "";
-  };
-  window.addEventListener("afterprint", restore, { once: true });
+  document.documentElement.classList.add("printing");
+  // iPhone Safari can report the print as finished before it has drawn the preview, so the
+  // printout is only cleared once the user is back on the page and touches it (or prints again).
+  window.addEventListener(
+    "afterprint",
+    () => {
+      window.addEventListener("pointerdown", endPrinting, { once: true });
+      window.addEventListener("keydown", endPrinting, { once: true });
+    },
+    { once: true },
+  );
   window.print();
+}
+
+function endPrinting() {
+  document.documentElement.classList.remove("printing");
+  $("print-area").innerHTML = "";
+  $("print-page-style").textContent = "";
 }
 
 function openShortcutDialog() {
