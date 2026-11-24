@@ -394,18 +394,21 @@ function printRange(view, from, to) {
       grid.style.gridTemplateColumns = `1.6em repeat(${days}, minmax(0, 1fr))`;
     }
   } else {
-    // A fixed number of days per page: three when the timetable is personal, two when every
-    // class and division is listed (those days are much taller).
-    const perPage = state.sel.class && state.sel.division ? 3 : 2;
-    const dates = model.dates.filter((x) => x >= from && x <= to);
-    for (let i = 0; i < dates.length; i += perPage) {
-      const page = newPage("print-days");
-      for (const d of dates.slice(i, i + perPage)) {
-        const body = document.createElement("div");
-        body.className = "print-day view view-day";
-        page.append(body);
-        renderDay(body, ctxFor(d));
-      }
+    // Days flow in one list and the browser fits as many as the sheet holds, whatever its size
+    // or orientation, moving a day that would be cut to the next sheet. Each day carries a small
+    // header, so every sheet starts with one.
+    const flow = document.createElement("section");
+    flow.className = "print-flow";
+    area.append(flow);
+    for (const d of model.dates.filter((x) => x >= from && x <= to)) {
+      const day = document.createElement("div");
+      day.className = "print-day";
+      day.innerHTML = `<header class="print-head"><strong>${esc(t.appTitle)}</strong><span>${esc(selectionSummary())}</span></header>`;
+      const body = document.createElement("div");
+      body.className = "view view-day";
+      day.append(body);
+      flow.append(day);
+      renderDay(body, ctxFor(d));
     }
   }
   // Week view in landscape. Printouts are always on white (see the print styles).
