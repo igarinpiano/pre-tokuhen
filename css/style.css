@@ -861,15 +861,35 @@ html.tl-page-scroll .tl-grid {
 #print-area { display: none; }
 
 @media print {
-  body > *:not(#print-area) { display: none !important; }
+  /* Always print on white, whatever the screen theme is. */
+  html:root:not([data-theme="print"]) {
+    --bg: #ffffff;
+    --surface: #f4f4f5;
+    --surface-2: #e9e9eb;
+    --ink: #1d1d1f;
+    --muted: #6b6b70;
+    --line: #dedee1;
+    --line-soft: rgb(29 29 31 / 0.07);
+    --hover-tint: rgb(29 29 31 / 0.07);
+    --accent: #1d1d1f;
+    --accent-soft: #f1f1f2;
+    --today: #df3640;
+    --today-tint: rgb(223 54 64 / 0.06);
+    --tint-l: 92%;
+    --text-l: 27%;
+    --bar-l: 46%;
+    --tint-s: 62%;
+  }
   body { padding: 0 !important; background: #fff; }
-  #print-area { display: block; }
-  #print-area * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+  /* Printing a range with the print button: only the prepared pages. */
+  html.printing body > *:not(#print-area) { display: none !important; }
+  html.printing #print-area { display: block; }
   .print-head { display: flex; justify-content: space-between; gap: 16px; font-size: 12px; margin-bottom: 6px; }
   .print-page { padding: 0; break-after: page; }
   .print-page:last-child { break-after: auto; }
   .print-day { padding: 0; break-inside: avoid; margin-bottom: 12px; }
-  #print-area .view-actions, #print-area .today-pill { display: none; }
   #print-area .view-head { margin: 0 0 8px; }
   #print-area .wk-scroll { overflow: visible; }
   #print-area .wk-colbg.is-selected { background: none; box-shadow: none; }
@@ -877,6 +897,13 @@ html.tl-page-scroll .tl-grid {
   #print-area .is-past { opacity: 1; color: inherit; }
   #print-area .day-list { max-width: none; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
   #print-area .day-slot { min-height: 0; padding: 8px 12px; }
+
+  /* Printing from the browser's own menu: the current view, without the controls. */
+  html:not(.printing) :is(.settings-row, .settings-panel, .nav-row, .scrubber, .foot, .banner, .shortcut-btn, .calendar) { display: none !important; }
+  html:not(.printing) .date-btn { border: 0; padding: 0; }
+  html:not(.printing) .wk-scroll, html:not(.printing) .tl-scroll { overflow: visible; }
+
+  .view-actions, .stepper, .today-pill { display: none !important; }
 }
 
 /* ---------- Settings button (phones) ---------- */
