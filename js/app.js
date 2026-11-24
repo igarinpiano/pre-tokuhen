@@ -394,12 +394,11 @@ function printRange(view, from, to) {
       grid.style.gridTemplateColumns = `1.6em repeat(${days}, minmax(0, 1fr))`;
     }
   } else {
-    // Days flow in one list; the print styles start a new sheet every N days, where N depends
-    // on the sheet's orientation (only known when printing: Safari lets the user pick it) and
-    // on how tall the days are: personal timetables 3 portrait / 2 landscape, every class and
-    // division 2 / 1. Each day carries a header that shows only when it starts a sheet.
+    // Days flow in one list and the browser fits as many as the sheet holds, whatever its size
+    // or orientation, moving a day that would be cut to the next sheet. Each day carries a small
+    // header, so every sheet starts with one.
     const flow = document.createElement("section");
-    flow.className = `print-flow ${state.sel.class && state.sel.division ? "personal" : "full"}`;
+    flow.className = "print-flow";
     area.append(flow);
     for (const d of model.dates.filter((x) => x >= from && x <= to)) {
       const day = document.createElement("div");
