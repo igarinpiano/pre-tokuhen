@@ -880,6 +880,10 @@ html.tl-page-scroll .tl-grid {
     --bar-l: 46%;
     --tint-s: 62%;
   }
+  /* body has min-height: 100vh on screen. iPhone Safari keeps measuring vh against the phone
+     screen while printing, which is taller than a landscape A4 sheet, so the page grew past one
+     sheet and a blank second page appeared. */
+  html, body { min-height: 0 !important; height: auto !important; }
   body { padding: 0 !important; background: #fff; }
   * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 
