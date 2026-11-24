@@ -368,25 +368,44 @@ function printRange(view, from, to) {
   const area = $("print-area");
   const noop = () => {};
   const ctxFor = (date) => ({ model, sel: state.sel, date, onSelect: noop, onOpenDay: noop, onPrint: noop });
-  const head = document.createElement("header");
-  head.className = "print-head";
-  head.innerHTML = `<strong>${esc(t.appTitle)}</strong><span>${esc(selectionSummary())}</span>`;
-  area.append(head);
+  // Every printed page is built here, with its own header, so pages never depend on where the
+  // browser would break a long flow of content.
+  const newPage = (cls) => {
+    const page = document.createElement("section");
+    page.className = `print-page ${cls}`;
+    const head = document.createElement("header");
+    head.className = "print-head";
+    head.innerHTML = `<strong>${esc(t.appTitle)}</strong><span>${esc(selectionSummary())}</span>`;
+    page.append(head);
+    area.append(page);
+    return page;
+  };
   if (view === "week") {
     for (let mon = mondayOf(from); mon <= to; mon = addDays(mon, 7)) {
       const first = model.nextEntry(mon);
       if (first > addDays(mon, 6)) continue; // a week without school (winter break)
-      const page = document.createElement("section");
-      page.className = "print-page view view-week";
-      renderWeek(page, ctxFor(first));
-      area.append(page);
+      const body = document.createElement("div");
+      body.className = "view view-week";
+      newPage("print-week").append(body);
+      renderWeek(body, ctxFor(first));
+      // Let the day columns shrink to the paper width instead of keeping their screen minimum.
+      const grid = body.querySelector(".wk-grid");
+      const days = grid.querySelectorAll(".wk-date").length;
+      grid.style.gridTemplateColumns = `1.6em repeat(${days}, minmax(0, 1fr))`;
     }
   } else {
-    for (const d of model.dates.filter((x) => x >= from && x <= to)) {
-      const page = document.createElement("section");
-      page.className = "print-day view view-day";
-      renderDay(page, ctxFor(d));
-      area.append(page);
+    // A fixed number of days per page: three when the timetable is personal, two when every
+    // class and division is listed (those days are much taller).
+    const perPage = state.sel.class && state.sel.division ? 3 : 2;
+    const dates = model.dates.filter((x) => x >= from && x <= to);
+    for (let i = 0; i < dates.length; i += perPage) {
+      const page = newPage("print-days");
+      for (const d of dates.slice(i, i + perPage)) {
+        const body = document.createElement("div");
+        body.className = "print-day view view-day";
+        page.append(body);
+        renderDay(body, ctxFor(d));
+      }
     }
   }
   // Week view in landscape. Printouts are always on white (see the print styles).

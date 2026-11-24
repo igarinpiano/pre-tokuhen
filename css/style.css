@@ -886,17 +886,33 @@ html.tl-page-scroll .tl-grid {
   /* Printing a range with the print button: only the prepared pages. */
   html.printing body > *:not(#print-area) { display: none !important; }
   html.printing #print-area { display: block; }
-  .print-head { display: flex; justify-content: space-between; gap: 16px; font-size: 12px; margin-bottom: 6px; }
-  .print-page { padding: 0; break-after: page; }
-  .print-page:last-child { break-after: auto; }
-  .print-day { padding: 0; break-inside: avoid; margin-bottom: 12px; }
-  #print-area .view-head { margin: 0 0 8px; }
-  #print-area .wk-scroll { overflow: visible; }
+  .print-head { display: flex; justify-content: space-between; gap: 16px; font-size: 10pt; margin-bottom: 4mm; }
+  /* One section per sheet: start each on a new page, never split one, and never add a page
+     after the last one. */
+  .print-page { break-inside: avoid; }
+  .print-page + .print-page { break-before: page; }
+  #print-area .view { padding: 0; max-width: none; }
+  #print-area .view-head { margin: 0 0 3mm; }
+  #print-area .view-title { font-size: 14pt; }
+  #print-area .wk-scroll { overflow: visible; margin: 0; padding: 0; }
+  #print-area .wk-grid { min-width: 0; gap: 2px; grid-template-rows: auto repeat(6, minmax(14mm, auto)); }
+  #print-area .wk-cell { padding: 1.5mm 2mm; break-inside: avoid; }
+  #print-area .wk-cell .subj-name { font-size: 9.5pt; }
+  #print-area .wk-cell .subj-detail, #print-area .groups { font-size: 7.5pt; }
+  /* Weeks listing every class and division: entries flow side by side so a week fits a sheet. */
+  #print-area .wk-cell.is-multi { padding: 1mm 1.5mm; }
+  #print-area .wk-cell.is-multi .groups { display: flex; flex-wrap: wrap; gap: 0.4mm 2.5mm; font-size: 6.5pt; line-height: 1.3; }
+  #print-area .wk-cell.is-multi .groups li { display: flex; gap: 1mm; }
+  #print-area .wk-cell.is-multi .group-subj { border-left-width: 2px; padding-left: 1mm; overflow-wrap: normal; }
   #print-area .wk-colbg.is-selected { background: none; box-shadow: none; }
   #print-area .wk-date.is-selected { border-bottom-color: var(--line); }
   #print-area .is-past { opacity: 1; color: inherit; }
-  #print-area .day-list { max-width: none; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
-  #print-area .day-slot { min-height: 0; padding: 8px 12px; }
+  #print-area .print-day + .print-day { margin-top: 5mm; }
+  #print-area .day-list { max-width: none; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2mm; }
+  #print-area .day-slot { min-height: 0; padding: 2mm 3mm; break-inside: avoid; }
+  #print-area .day-subject .subj-name { font-size: 11pt; }
+  #print-area .day-period-num { font-size: 13pt; }
+  #print-area .day-slot.is-multi .groups { font-size: 8pt; gap: 1px; }
 
   /* Printing from the browser's own menu: the current view, without the controls. */
   html:not(.printing) :is(.settings-row, .settings-panel, .nav-row, .scrubber, .foot, .banner, .shortcut-btn, .calendar) { display: none !important; }
