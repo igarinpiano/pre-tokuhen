@@ -394,18 +394,22 @@ function printRange(view, from, to) {
       grid.style.gridTemplateColumns = `1.6em repeat(${days}, minmax(0, 1fr))`;
     }
   } else {
-    // A fixed number of days per page: three when the timetable is personal, two when every
-    // class and division is listed (those days are much taller).
-    const perPage = state.sel.class && state.sel.division ? 3 : 2;
-    const dates = model.dates.filter((x) => x >= from && x <= to);
-    for (let i = 0; i < dates.length; i += perPage) {
-      const page = newPage("print-days");
-      for (const d of dates.slice(i, i + perPage)) {
-        const body = document.createElement("div");
-        body.className = "print-day view view-day";
-        page.append(body);
-        renderDay(body, ctxFor(d));
-      }
+    // Days flow in one list; the print styles start a new sheet every N days, where N depends
+    // on the sheet's orientation (only known when printing: Safari lets the user pick it) and
+    // on how tall the days are: personal timetables 3 portrait / 2 landscape, every class and
+    // division 2 / 1. Each day carries a header that shows only when it starts a sheet.
+    const flow = document.createElement("section");
+    flow.className = `print-flow ${state.sel.class && state.sel.division ? "personal" : "full"}`;
+    area.append(flow);
+    for (const d of model.dates.filter((x) => x >= from && x <= to)) {
+      const day = document.createElement("div");
+      day.className = "print-day";
+      day.innerHTML = `<header class="print-head"><strong>${esc(t.appTitle)}</strong><span>${esc(selectionSummary())}</span></header>`;
+      const body = document.createElement("div");
+      body.className = "view view-day";
+      day.append(body);
+      flow.append(day);
+      renderDay(body, ctxFor(d));
     }
   }
   // Week view in landscape. Printouts are always on white (see the print styles).

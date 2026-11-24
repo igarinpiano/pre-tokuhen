@@ -911,7 +911,23 @@ html.tl-page-scroll .tl-grid {
   #print-area .wk-colbg.is-selected { background: none; box-shadow: none; }
   #print-area .wk-date.is-selected { border-bottom-color: var(--line); }
   #print-area .is-past { opacity: 1; color: inherit; }
-  #print-area .print-day + .print-day { margin-top: 5mm; }
+  /* Day printing: a new sheet every N days (see printRange). */
+  .print-day { break-inside: avoid; }
+  .print-day + .print-day { margin-top: 5mm; }
+  .print-day .print-head { display: none; }
+  .print-flow.personal .print-day:nth-child(3n + 1),
+  .print-flow.full .print-day:nth-child(2n + 1) { break-before: page; margin-top: 0; }
+  .print-flow.personal .print-day:nth-child(3n + 1) .print-head,
+  .print-flow.full .print-day:nth-child(2n + 1) .print-head { display: flex; }
+  @media (orientation: landscape) {
+    .print-flow.personal .print-day:nth-child(3n + 1) { break-before: auto; margin-top: 5mm; }
+    .print-flow.personal .print-day:nth-child(3n + 1) .print-head { display: none; }
+    .print-flow.personal .print-day:nth-child(2n + 1) { break-before: page; margin-top: 0; }
+    .print-flow.personal .print-day:nth-child(2n + 1) .print-head { display: flex; }
+    .print-flow.full .print-day { break-before: page; margin-top: 0; }
+    .print-flow.full .print-day .print-head { display: flex; }
+  }
+  .print-flow .print-day:first-child { break-before: auto; }
   #print-area .day-list { max-width: none; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2mm; }
   #print-area .day-slot { min-height: 0; padding: 2mm 3mm; break-inside: avoid; }
   #print-area .day-subject .subj-name { font-size: 11pt; }
