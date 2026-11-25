@@ -560,10 +560,10 @@ const WEEKS = [
     days: [
       { d: "1/4", dow: "月", emptyDay: true },
       { d: "1/5", dow: "火", slots: [
-        { s: 1, span: 6, type: "exam", title: "河合塾 Kパック模試", note: "8:40開始 / 共テ時計持参" }
+        { s: 1, span: 6, type: "exam", title: "河合塾 Kパック模試", note: "8:40から始めます。共通テストで持ち込める時計を持参すること（教室の時計は外します）。詳細は後日提示。" }
       ]},
       { d: "1/6", dow: "水", slots: [
-        { s: 1, span: 6, type: "exam", title: "河合塾 Kパック模試", note: "8:40開始 / 共テ時計持参" }
+        { s: 1, span: 6, type: "exam", title: "河合塾 Kパック模試", note: "8:40から始めます。共通テストで持ち込める時計を持参すること（教室の時計は外します）。詳細は後日提示。" }
       ]},
       { d: "1/7", dow: "木", slots: [
         { s: 1, span: 1, type: "course", time: "9:00〜",  data: COURSE_BASE.thu1 },
@@ -575,7 +575,7 @@ const WEEKS = [
         { s: 1, span: 1, type: "course", time: "9:00〜",  data: COURSE_BASE.fri1 },
         { s: 2, span: 1, type: "course", time: "11:10〜", data: COURSE_BASE.fri2 },
         { s: 3, span: 1, type: "course", time: "13:45〜", data: COURSE_BASE.fri3 },
-        { s: 4, span: 2, type: "class",  time: "",        data: ["数②","数②","数②","国語","国語","国語","英語","英語"] },
+        { s: 4, span: 2, type: "class",  time: "",       data: ["数②","数②","数②","国語","国語","国語","英語","英語"] },
         { s: 6, span: 1, type: "course", time: "14:50〜", data: COURSE_BASE.fri6 },
       ]},
     ]
@@ -611,7 +611,7 @@ const WEEKS = [
     after: [
       { d: "1/16 土", title: "共通テスト 第1日目", note: "健闘を祈る", kind: "" },
       { d: "1/17 日", title: "共通テスト 第2日目", note: "最後まで頑張れ", kind: "" },
-      { d: "1/18 月", title: "8:40〜 自己採点・リサーチ提出", note: "遅刻厳禁 / 持参: 全問題冊子・スマホ等の通信端末・筆記具（事前登録を済ませる）", kind: "selfcheck" },
+      { d: "1/18 月", title: "自己採点・リサーチ提出", note: "8:40〜。遅刻しないこと（遅刻者を待たずに始めるので、指示が後回しになります）。持参物：共通テストの全問題冊子、スマホ・タブレット等の通信端末、筆記具。「自己採点集計」の事前登録を済ませておくこと。", kind: "selfcheck" },
     ]
   }
 ];

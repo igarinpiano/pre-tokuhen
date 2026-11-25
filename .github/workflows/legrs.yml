@@ -1,7 +1,8 @@
 name: Send timetable to legrs/pre_tokuhen
 
-# Writes data/timetable.json as dat.js into the fork igarinpiano/pre_tokuhen and opens (or
-# updates) a pull request to legrs/pre_tokuhen. Runs when the data changes on main, or by hand
+# Rewrites the timetable in comparison/個人時間割表.html (committed to main), then writes
+# data/timetable.json as dat.js into the fork igarinpiano/pre_tokuhen and opens (or updates) a
+# pull request to legrs/pre_tokuhen. Runs when the data changes on main, or by hand
 # from the Actions tab (Run workflow).
 #
 # Needs the repository secret LEGRS_PR_TOKEN: a classic personal access token with the
@@ -10,8 +11,11 @@ name: Send timetable to legrs/pre_tokuhen
 on:
   push:
     branches: [main]
-    paths: ["data/timetable.json", "scripts/export-legrs.mjs", ".github/workflows/legrs.yml"]
+    paths: ["data/timetable.json", "scripts/export-legrs.mjs", "scripts/export-comparison.mjs", ".github/workflows/legrs.yml"]
   workflow_dispatch:
+
+permissions:
+  contents: write # commits comparison/個人時間割表.html to main
 
 concurrency:
   group: legrs
@@ -33,6 +37,27 @@ jobs:
         with:
           node-version: 20
       - run: node scripts/validate.mjs
+
+      - name: Rewrite comparison/個人時間割表.html
+        run: |
+          set -euo pipefail
+          node scripts/export-comparison.mjs
+          if git diff --quiet -- comparison; then
+            echo "comparison/個人時間割表.html is up to date." | tee -a "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          if [ "$GITHUB_REF" != "refs/heads/main" ]; then
+            echo "::warning::Not on main, so the rewritten comparison page isn't committed."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
+          git commit --quiet -m "Update comparison/個人時間割表.html from data/timetable.json" -- comparison
+          for i in 1 2 3; do
+            git push --quiet origin HEAD:main && break
+            git pull --quiet --rebase origin main
+          done
+          echo "Committed comparison/個人時間割表.html to main." | tee -a "$GITHUB_STEP_SUMMARY"
 
       - name: Write dat.js into the fork and open the pull request
         env:

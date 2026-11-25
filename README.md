@@ -128,8 +128,9 @@ independently, to catch reading mistakes:
 node scripts/compare-sources.mjs
 ```
 
-By default it reads `comparison/個人時間割表.html` and legrs's last hand-typed `dat.js` (pinned to
-a commit, since his site now gets its data from this repository)
+By default it reads the Gemini transcription and legrs's last hand-typed `dat.js`, each pinned to
+the commit before it started being generated from this data (`comparison/個人時間割表.html` and his
+site are now kept in step by the workflow below)
 (`--gemini <file>` and `--legrs <file or URL>` point it elsewhere; `--all` lists agreeing cells
 too). Every source is reduced to one subject per date, period block and class (120-minute
 blocks) or division (55-minute blocks), and every cell where the sources disagree is listed
@@ -150,16 +151,21 @@ It also runs two checks that need only one source:
 its `dat.js`. Whenever `data/timetable.json` changes on `main` (or from **Actions → Send timetable
 to legrs/pre_tokuhen → Run workflow**), [`.github/workflows/legrs.yml`](.github/workflows/legrs.yml):
 
-1. writes the data in his format with `scripts/export-legrs.mjs`,
-2. commits it as `dat.js` to the fork [igarinpiano/pre_tokuhen](https://github.com/igarinpiano/pre_tokuhen)
+1. rewrites the timetable in `comparison/個人時間割表.html` with `scripts/export-comparison.mjs` and
+   commits it to `main` (only the data changes; the page and its 1/7–1/8 start times stay until
+   `bells` is filled in),
+2. writes the data in his format with `scripts/export-legrs.mjs`,
+3. commits it as `dat.js` to the fork [igarinpiano/pre_tokuhen](https://github.com/igarinpiano/pre_tokuhen)
    (branch `claude/dreamy-keller-6czn0m`, set by `FORK_BRANCH`), kept up to date with his `master`,
-3. opens a pull request to legrs/pre_tokuhen, or updates the one that's already open.
+4. opens a pull request to legrs/pre_tokuhen, or updates the one that's already open.
 
 It needs the repository secret `LEGRS_PR_TOKEN`: a classic personal access token with the
-`public_repo` scope. To see the output locally:
+`public_repo` scope (the comparison page is committed with the workflow's own token). To see the
+output locally:
 
 ```
 node scripts/export-legrs.mjs dat.js
+node scripts/export-comparison.mjs
 ```
 
 ## Where the text lives

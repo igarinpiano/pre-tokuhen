@@ -7,7 +7,8 @@
 //
 // Usage:
 //   node scripts/compare-sources.mjs [--gemini <file.html>] [--legrs <js file or URL>] [--all]
-// Defaults: comparison/個人時間割表.html and legrs's last hand-typed dat.js (commit c2dd43e).
+// Defaults: the Gemini transcription and legrs's last hand-typed dat.js, both pinned to the
+// commits before they were generated from data/timetable.json (10eed3b and c2dd43e).
 // --all also prints the cells where every source agrees.
 
 import { readFileSync } from "node:fs";
@@ -139,7 +140,7 @@ function fromGemini(html) {
     }
     for (const a of week.after || []) events.set(iso(a.d.split(" ")[0]), a.title);
   }
-  return { name: "Gemini (comparison/個人時間割表.html)", cells, events };
+  return { name: "Gemini (original transcription)", cells, events };
 }
 
 // Day layouts used by legrs.github.io/pre_tokuhen: per column, the subjects in slot order.
@@ -170,7 +171,7 @@ function fromLegrs(code) {
 
 const sources = [fromOurs()];
 try {
-  sources.push(fromGemini(await readText(opt("gemini", fileURLToPath(new URL("../comparison/個人時間割表.html", import.meta.url))))));
+  sources.push(fromGemini(await readText(opt("gemini", "https://raw.githubusercontent.com/igarinpiano/pre-tokuhen/10eed3b5e036e738f7883621cd087f0b62c08e9d/comparison/%E5%80%8B%E4%BA%BA%E6%99%82%E9%96%93%E5%89%B2%E8%A1%A8.html"))));
 } catch (e) {
   console.error(`Skipping Gemini: ${e.message}`);
 }
