@@ -5,7 +5,8 @@ import { Model } from "./model.js";
 import { addDays, mondayOf, detectedCalendar, formatLong, formatMedium, formatUpdated, getCalendar, setCalendar, todayISO } from "./format.js";
 import { createScrubber } from "./scrubber.js";
 import { createCalendar } from "./calendar.js";
-import { esc, renderDay, renderTimeline, renderWeek } from "./views.js";
+import { esc, renderDay, renderTimeline, renderWeek, weekRange } from "./views.js";
+import { setupXP, xpActive } from "./xp.js";
 
 const $ = (id) => document.getElementById(id);
 const DATA_URL = "data/timetable.json";
@@ -62,7 +63,9 @@ async function fetchData() {
   return text;
 }
 
-function showBanner(message, actionLabel, action) {
+let bannerTimer = 0;
+function showBanner(message, actionLabel, action, { hideAfter = 0 } = {}) {
+  clearTimeout(bannerTimer);
   const b = $("update-banner");
   b.innerHTML = `<span>${esc(message)}</span>${
     actionLabel ? `<button type="button" class="banner-btn">${icons.refresh(16)}${esc(actionLabel)}</button>` : ""
@@ -73,6 +76,7 @@ function showBanner(message, actionLabel, action) {
     action();
   });
   b.querySelector(".banner-close").addEventListener("click", () => (b.hidden = true));
+  if (hideAfter) bannerTimer = setTimeout(() => (b.hidden = true), hideAfter);
 }
 
 let lastCheck = 0;
@@ -149,7 +153,7 @@ function readSelection() {
   state.sel.division = /^[abcklmno]$/.test(d) ? d : null;
   state.sel.electives = {};
   for (const [k, v] of source) {
-    if (!["class", "division", "lang", "cal", "vimium"].includes(k)) state.sel.electives[k] = v.toLowerCase();
+    if (!["class", "division", "lang", "cal", "vimium", "theme"].includes(k)) state.sel.electives[k] = v.toLowerCase();
   }
 }
 
@@ -170,6 +174,7 @@ function queryString() {
   }
   if (forcedLang) p.set("lang", forcedLang);
   if (vimiumMode) p.set("vimium", "1");
+  if (xpActive) p.set("theme", "xp");
   // Keep a calendar the browser could not detect, so bookmarks and Home Screen apps remember it.
   if (getCalendar() !== detectedCalendar) p.set("cal", getCalendar());
   return p.toString();
@@ -567,6 +572,7 @@ function setDate(date, { scroll = true } = {}) {
   if (state.view === "timeline" && timeline) {
     timeline.mark(date);
     if (scroll) timeline.scrollTo(date, true);
+    xpUI?.update();
   } else {
     renderView();
   }
@@ -602,6 +608,7 @@ function renderView() {
       }
       scrubber.setRange(a, b, sel);
       timeline?.mark(sel);
+      xpUI?.update();
     },
   };
   if (state.view === "timeline") {
@@ -616,6 +623,7 @@ function renderView() {
     const { range } = renderDay(root, ctx);
     scrubber.setRange(range[0], range[1], state.date);
   }
+  xpUI?.update();
 }
 
 function build() {
@@ -655,23 +663,23 @@ function build() {
 
 /* ---------- Global events ---------- */
 
-$("view-tabs").addEventListener("click", (e) => {
-  const b = e.target.closest("[data-view]");
-  if (!b || b.dataset.view === state.view) return;
-  state.view = b.dataset.view;
-  store.set("tt:view", state.view);
+const VIEWS = ["timeline", "week", "day"];
+function setView(view) {
+  if (!model || view === state.view) return;
+  state.view = view;
+  store.set("tt:view", view);
   renderTabs();
   renderView();
+}
+$("view-tabs").addEventListener("click", (e) => {
+  const b = e.target.closest("[data-view]");
+  if (b) setView(b.dataset.view);
 });
 $("view-tabs").addEventListener("keydown", (e) => {
   if (!["ArrowLeft", "ArrowRight"].includes(e.key)) return;
-  const order = ["timeline", "week", "day"];
-  const i = order.indexOf(state.view) + (e.key === "ArrowRight" ? 1 : -1);
-  const next = order[(i + order.length) % order.length];
-  state.view = next;
-  store.set("tt:view", next);
-  renderTabs();
-  renderView();
+  const i = VIEWS.indexOf(state.view) + (e.key === "ArrowRight" ? 1 : -1);
+  const next = VIEWS[(i + VIEWS.length) % VIEWS.length];
+  setView(next);
   $("view-tabs").querySelector(`[data-view="${next}"]`).focus();
 });
 $("shortcut-btn").addEventListener("click", openShortcutDialog);
@@ -693,12 +701,7 @@ document.addEventListener("keydown", (e) => {
     if (state.view === "timeline" && !(state.sel.class && state.sel.division)) return;
     e.preventDefault();
     const dir = e.key === "ArrowRight" ? 1 : -1;
-    let next = model.stepEntry(state.date, dir);
-    if (e.shiftKey) {
-      const mon = mondayOf(state.date);
-      next = dir > 0 ? model.nextEntry(addDays(mon, 7)) : model.nextEntry(mondayOf(model.prevEntry(addDays(mon, -1))));
-    }
-    setDate(next);
+    setDate(e.shiftKey ? model.stepWeek(state.date, dir) : model.stepEntry(state.date, dir));
   } else if (e.key === "Enter" && state.view !== "day" && !target.closest("button, a")) {
     e.preventDefault();
     openDay(state.date);
@@ -732,6 +735,77 @@ if ("serviceWorker" in navigator && (location.protocol === "https:" || location.
   });
   navigator.serviceWorker.register("sw.js").catch(() => {});
 }
+
+/* ---------- XP theme (?theme=xp) ---------- */
+
+// What the XP skin (js/xp.js) needs from the app. "Step" is what its previous/next buttons do:
+// a school day in the day view, a week in the week and timeline views.
+const repeat = (date, count, fn) => {
+  let d = date;
+  for (let i = 0; i < count; i++) d = fn(d);
+  return d;
+};
+const xpUI = xpActive
+  ? setupXP({
+      get model() {
+        return model;
+      },
+      get state() {
+        return state;
+      },
+      stepUnit: () => (state.view === "day" ? "day" : "week"),
+      canStep(dir) {
+        if (!model || !state.date) return false;
+        if (state.view === "timeline") return Boolean(timeline?.canStep?.(dir));
+        if (state.view === "day") return dir < 0 ? state.date > model.first : state.date < model.last;
+        const mon = mondayOf(state.date);
+        return dir < 0 ? mon > model.first : addDays(mon, 7) <= model.last;
+      },
+      stepTarget(dir, count = 1) {
+        if (state.view === "timeline") return timeline?.target?.(dir, count) || null;
+        if (state.view === "day") return repeat(state.date, count, (d) => model.stepEntry(d, dir));
+        return repeat(state.date, count, (d) => model.stepWeek(d, dir));
+      },
+      step(dir, count = 1) {
+        if (state.view === "timeline") timeline?.step?.(dir, count);
+        else setDate(this.stepTarget(dir, count));
+      },
+      stepWeek(dir, count = 1) {
+        if (state.view === "timeline") timeline?.step?.(dir, count);
+        else setDate(repeat(state.date, count, (d) => model.stepWeek(d, dir)));
+      },
+      stepDay(dir, count = 1) {
+        setDate(repeat(state.date, count, (d) => model.stepEntry(d, dir)));
+      },
+      weekEdge(dir) {
+        const days = weekRange(model, state.date).filter((d) => model.hasEntry(d));
+        if (days.length) setDate(dir < 0 ? days[0] : days[days.length - 1]);
+      },
+      go: (date) => setDate(date),
+      today: () => setDate(defaultDate()),
+      views: VIEWS,
+      vimium: vimiumMode,
+      setView,
+      openDay,
+      openCalendar: () => $("date-btn").click(),
+      print: () => openPrintDialog(),
+      async copyLink() {
+        try {
+          await navigator.clipboard.writeText(location.href);
+          showBanner(t.copied, null, null, { hideAfter: 2500 });
+        } catch {
+          prompt(t.copyLink, location.href);
+        }
+      },
+      reportUrl: () => $("report-btn").href,
+      selectionSummary: () => {
+        const s = state.sel;
+        if (!model) return "";
+        const extra = model.electivesFor(s.division).map((id) => (s.electives[id] ? model.name(s.electives[id]) : ""));
+        return t.settingsSummary(s.class, s.division && s.division.toUpperCase(), extra);
+      },
+    })
+  : null;
 
 document.documentElement.dataset.lang = lang;
 boot();

@@ -203,15 +203,14 @@ export function renderTimeline(root, ctx) {
   const nextBtn = root.querySelector('[data-step="1"]');
   let firstVisible = model.first;
   // Week steps, so the timeline can also be moved with buttons.
+  const target = (dir, count = 1) => {
+    let d = firstVisible;
+    for (let i = 0; i < count; i++) d = model.stepWeek(d, dir);
+    return d;
+  };
   root.querySelector(".stepper").addEventListener("click", (e) => {
     const b = e.target.closest("[data-step]");
-    if (!b) return;
-    const mon = mondayOf(firstVisible);
-    const target =
-      Number(b.dataset.step) > 0
-        ? model.nextEntry(addDays(mon, 7))
-        : model.nextEntry(mondayOf(model.prevEntry(addDays(mon, -1))));
-    ctx.onSelect(target);
+    if (b) ctx.onSelect(target(Number(b.dataset.step)));
   });
 
   const report = () => {
@@ -251,6 +250,14 @@ export function renderTimeline(root, ctx) {
       if (!h) return;
       pos.by(h.getBoundingClientRect().left - labelRight(), smooth);
       requestAnimationFrame(report);
+    },
+    // Week steps for other controls (the XP theme's taskbar and keys).
+    target,
+    step(dir, count = 1) {
+      ctx.onSelect(target(dir, count));
+    },
+    canStep(dir) {
+      return !(dir < 0 ? prevBtn : nextBtn).disabled;
     },
     mark(date) {
       headers.forEach((h) => h.classList.toggle("is-selected", h.dataset.date === date));
@@ -345,14 +352,7 @@ export function renderWeek(root, ctx) {
 
   root.querySelector(".stepper").addEventListener("click", (e) => {
     const b = e.target.closest("[data-step]");
-    if (!b) return;
-    const mon = mondayOf(date);
-    if (Number(b.dataset.step) > 0) {
-      ctx.onSelect(model.nextEntry(addDays(mon, 7)));
-    } else {
-      const prev = model.prevEntry(addDays(mon, -1));
-      ctx.onSelect(model.nextEntry(mondayOf(prev)));
-    }
+    if (b) ctx.onSelect(model.stepWeek(date, Number(b.dataset.step)));
   });
   root.querySelector("[data-print]").addEventListener("click", () => ctx.onPrint?.());
   root.querySelector(".wk-grid").addEventListener("click", (e) => {
