@@ -30,6 +30,10 @@ const store = {
 const isApple = /iPhone|iPad|iPod|Macintosh/.test(navigator.userAgent);
 // ?vimium=1: the timeline scrolls the page sideways so Vimium's h/l keys can move it.
 const vimiumMode = ["1", "true", "on"].includes((new URLSearchParams(location.search).get("vimium") || "").toLowerCase());
+// Vimium is a desktop browser extension. On touch-only devices (phones, tablets without a
+// trackpad) the page keeps its regular layout: a page wider than the screen makes iPhone Safari
+// zoom out. The setting stays in the address, so the same link still works on a computer.
+const pageScrollMode = vimiumMode && !window.matchMedia("(hover: none) and (pointer: coarse)").matches;
 const isStandalone =
   window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
 
@@ -592,7 +596,7 @@ function renderView() {
   root.className = `view view-${state.view}`;
   const ctx = {
     model,
-    pageScroll: vimiumMode,
+    pageScroll: pageScrollMode,
     sel: state.sel,
     date: state.date,
     onSelect: (d) => setDate(d),
@@ -784,7 +788,7 @@ const xpUI = xpActive
       go: (date) => setDate(date),
       today: () => setDate(defaultDate()),
       views: VIEWS,
-      vimium: vimiumMode,
+      vimium: pageScrollMode,
       setView,
       openDay,
       openCalendar: () => $("date-btn").click(),

@@ -43,7 +43,7 @@ https://igarinpiano.github.io/pre-tokuhen/?class=3&division=l&soc-bckl=pol
 | `sci-bc` | `bio-b`, `earth-b` |
 | `lang` | `ja` or `en` (optional; overrides the browser language) |
 | `cal` | `japanese` or `gregory` (optional; set by the 西暦／和暦 switch in the date picker) |
-| `vimium` | `1` (optional; the timeline scrolls the page sideways so Vimium's `h` / `l` work) |
+| `vimium` | `1` (optional; the timeline scrolls the page sideways so Vimium's `h` / `l` work; ignored on touch-only devices such as phones) |
 | `theme` | `xp` (optional; the Windows XP-style look described below) |
 
 Without settings, the week and day views list every class and division.
