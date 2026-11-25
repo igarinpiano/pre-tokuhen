@@ -773,7 +773,10 @@ html.xp-flow .xp-tb-max { display: none; }
 html.xp-flow .xp-main { overflow: visible; }
 html.xp-flow .xp-body { border-left: 0; border-right: 0; }
 html.xp.tl-page-scroll :is(.xp-titlebar, .xp-menubar, .masthead, .foot) { position: sticky; left: 0; width: var(--vw, 100vw); }
-html.xp.tl-page-scroll :is(.xp-titlebar, .xp-menubar) { z-index: 21; }
+/* Stay above the timeline; the menu bar also stays above the toolbar (z-index 30) so its menus
+   open over it. */
+html.xp.tl-page-scroll .xp-titlebar { z-index: 21; }
+html.xp.tl-page-scroll .xp-menubar { z-index: 35; }
 html.xp.tl-page-scroll .view-timeline .view-head { left: 16px; width: calc(var(--vw, 100vw) - 32px); }
 /* The subject column sticks to the left edge of the screen, so the task pane steps aside. */
 html.xp.tl-page-scroll .xp-taskpane { display: none; }
