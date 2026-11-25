@@ -1,6 +1,6 @@
 // Reads data/timetable.json and resolves it for a given class, division and electives.
 import { lang } from "./i18n.js";
-import { addDays, weekday } from "./format.js";
+import { addDays, mondayOf, weekday } from "./format.js";
 
 export class Model {
   constructor(data) {
@@ -47,6 +47,12 @@ export class Model {
 
   prevEntry(date) {
     return [...this.dates].reverse().find((d) => d <= date) || this.first;
+  }
+
+  // A week earlier or later: the first school day of that week, skipping weeks without school.
+  stepWeek(date, dir) {
+    const mon = mondayOf(date);
+    return dir > 0 ? this.nextEntry(addDays(mon, 7)) : this.nextEntry(mondayOf(this.prevEntry(addDays(mon, -1))));
   }
 
   stepEntry(date, dir) {

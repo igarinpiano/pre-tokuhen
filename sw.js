@@ -1,11 +1,12 @@
 // Offline support. App files come from the network when online (so a new version shows up on
 // the next load) and from the cache when offline.
 // Timetable data is never cached here; the app keeps its own copy and asks before updating.
-const CACHE = "tokuhen-v23";
+const CACHE = "tokuhen-v24";
 const SHELL = [
   "./",
   "index.html",
   "css/style.css",
+  "css/xp.css",
   "js/app.js",
   "js/calendar.js",
   "js/config.js",
@@ -15,6 +16,7 @@ const SHELL = [
   "js/model.js",
   "js/scrubber.js",
   "js/views.js",
+  "js/xp.js",
   "icons/icon.svg",
   "manifest.webmanifest",
 ];

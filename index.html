@@ -19,6 +19,19 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="css/style.css" />
+    <!-- ?theme=xp: the Windows XP-style skin (css/xp.css, js/xp.js). Decided here, before the
+         page draws. A Home Screen app that lost its address falls back to the saved one. -->
+    <script>
+      (function () {
+        try {
+          var q = location.search;
+          var standalone = matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+          if (standalone && !/[?&](class|division)=/.test(q)) q = "?" + (localStorage.getItem("tt:query") || "");
+          if (/[?&]theme=xp(&|$)/i.test(q)) document.documentElement.classList.add("xp");
+        } catch (e) {}
+      })();
+    </script>
+    <link rel="stylesheet" href="css/xp.css" />
   </head>
   <body>
     <div class="banner" id="update-banner" role="status" hidden></div>

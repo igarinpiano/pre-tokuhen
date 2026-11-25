@@ -44,8 +44,41 @@ https://igarinpiano.github.io/pre-tokuhen/?class=3&division=l&soc-bckl=pol
 | `lang` | `ja` or `en` (optional; overrides the browser language) |
 | `cal` | `japanese` or `gregory` (optional; set by the 西暦／和暦 switch in the date picker) |
 | `vimium` | `1` (optional; the timeline scrolls the page sideways so Vimium's `h` / `l` work) |
+| `theme` | `xp` (optional; the Windows XP-style look described below) |
 
 Without settings, the week and day views list every class and division.
+
+## The XP look (`theme=xp`)
+
+Add `theme=xp` to the address for a Windows XP-style version of the site. The timetable data is
+the same; only the interface changes (`css/xp.css`, `js/xp.js`):
+
+- The site is a window with a menu bar (File, View, Go, Help), a toolbar for the views and the
+  date, a settings bar, a task pane (wide screens) and a status bar. The title bar's close button
+  goes back to the regular look; the maximize button fills the screen.
+- The date strip (ticks) is gone. A taskbar pinned to the bottom holds two full-width buttons,
+  previous and next: a day in the day view, a week in the week and timeline views.
+- Vim-style keys (the Go menu and `?` list them; a number first repeats a key, e.g. `3l`):
+
+  | Key | Action |
+  | --- | --- |
+  | `h` / `l` | Previous / next (same as the taskbar buttons) |
+  | `H` / `L` | Previous / next week |
+  | `b` / `w` | Previous / next school day |
+  | `0` / `$` | First / last day of the week |
+  | `t` | Today |
+  | `gg` / `G` | First / last day of the term |
+  | `/` | Open the date picker |
+  | `j` / `k` | Scroll down / up |
+  | `gt` / `gT` | Next / previous view |
+  | `o` or Return | Open the selected day |
+  | `?` | List the keys |
+  | Esc | Cancel a typed number or `g` |
+
+- On phones, each sideways swipe over the week or day view moves one week or day (the timeline
+  keeps its sideways scrolling). Light mode only, as Luna was.
+- With `vimium=1` as well, the page itself scrolls instead of the window's content area, so
+  Vimium's keys work as they do without the theme (they take precedence over the keys above).
 
 ## Reporting mistakes and class swaps
 

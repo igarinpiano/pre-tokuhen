@@ -1,0 +1,778 @@
+/* Windows XP-style skin, active only with ?theme=xp (html.xp, set in index.html).
+   js/xp.js builds the window around the regular page. Everything here is scoped to html.xp, and
+   the timetable styles to .xp-window, so printouts (#print-area) keep the regular look. */
+
+html.xp:root {
+  /* Luna is a light theme; it stays light in dark mode. */
+  color-scheme: light;
+  --bg: #ffffff;
+  --surface: #f4f3ee;
+  --surface-2: #ece9d8;
+  --ink: #000000;
+  --muted: #6f6c60;
+  --line: #d4d0c8;
+  --line-soft: rgb(0 0 0 / 0.06);
+  --hover-tint: rgb(49 106 197 / 0.1);
+  --accent: #316ac5;
+  --accent-soft: #eef2fb;
+  --today: #d4351c;
+  --today-tint: rgb(212 53 28 / 0.06);
+  --tint-l: 92%;
+  --text-l: 24%;
+  --bar-l: 46%;
+  --tint-s: 62%;
+  --radius: 3px;
+  --btn-radius: 3px;
+
+  --xp-face: #ece9d8;
+  --xp-select: #316ac5;
+  --xp-link: #215dc6;
+  --xp-link-hover: #428eff;
+  --xp-frame: #0831d9;
+  --xp-field: #7f9db9;
+  --xp-taskbar-h: 46px;
+  --xp-font: Tahoma, "MS UI Gothic", "Meiryo UI", "BIZ UDPGothic", "Hiragino Sans", system-ui, sans-serif;
+  --xp-title-font: "Trebuchet MS", Tahoma, "BIZ UDPGothic", "Hiragino Sans", sans-serif;
+  --xp-titlebar: linear-gradient(180deg, #0997ff, #0053ee 8%, #0050ee 40%, #06f 88%, #06f 93%, #005bff 95%, #003dd7 96%, #003dd7);
+}
+
+/* Until js/xp.js has built the window, nothing is shown (no flash of the regular layout). */
+html.xp body:not(.xp-ready) { visibility: hidden; }
+
+html.xp body {
+  font-family: var(--xp-font);
+  font-size: 13px;
+  line-height: 1.45;
+  padding: 0;
+  min-height: 0;
+  height: 100dvh;
+  overflow: hidden;
+  /* A plain sky over a green hill. */
+  background:
+    radial-gradient(140% 55% at 30% 112%, #5fae3a 0 46%, transparent 46.5%),
+    radial-gradient(120% 50% at 85% 118%, #4c9a2c 0 45%, transparent 45.5%),
+    linear-gradient(180deg, #2a64c9 0%, #4f8ae0 38%, #8db8ee 70%, #b9d4f2 100%);
+  background-color: #3a6ea5;
+}
+
+/* The regular date strip (ticks) is replaced by the taskbar. */
+html.xp .scrubber { display: none !important; }
+html.xp .brand { display: none; }
+html.xp .view-head .stepper { display: none; }
+html.xp :focus-visible { outline: 1px dotted #000; outline-offset: -3px; }
+
+/* ---------- Desktop and window ---------- */
+
+.xp-desktop {
+  position: fixed;
+  inset: 0 0 calc(var(--xp-taskbar-h) + env(safe-area-inset-bottom)) 0;
+  padding: 20px 24px;
+  display: flex;
+  justify-content: center;
+}
+.xp-window {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 1360px;
+  height: 100%;
+  min-height: 0;
+  padding: 0 3px 3px;
+  background: var(--xp-face);
+  border-radius: 8px 8px 0 0;
+  box-shadow:
+    inset -1px -1px #00138c, inset 1px 1px #0831d9,
+    inset -2px -2px #001ea0, inset 2px 2px #166aee,
+    inset -3px -3px #003bda, inset 3px 3px #0855dd,
+    6px 8px 24px -6px rgb(0 0 0 / 0.5);
+}
+html.xp-max .xp-desktop { padding: 0; }
+html.xp-max .xp-window { max-width: none; border-radius: 0; }
+html.xp-max .xp-titlebar { border-radius: 0; }
+
+.xp-titlebar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 30px;
+  margin: 0 -3px;
+  padding: 0 5px 0 7px;
+  background: var(--xp-titlebar);
+  border-radius: 7px 7px 0 0;
+  color: #fff;
+  user-select: none;
+  -webkit-user-select: none;
+  flex: none;
+}
+.xp-title-icon { display: flex; }
+.xp-title-icon .logo rect:first-child { fill: #fff; }
+.xp-title-icon .logo g { fill: #0a5ae8; }
+.xp-title-text {
+  flex: 1;
+  min-width: 0;
+  font-family: var(--xp-title-font);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  text-shadow: 1px 1px #0f1089;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.xp-title-buttons { display: flex; gap: 2px; flex: none; }
+.xp-tb {
+  display: grid;
+  place-items: center;
+  width: 21px;
+  height: 21px;
+  padding: 0;
+  border: 1px solid #fff;
+  border-radius: 3px;
+  background: radial-gradient(circle at 90% 90%, #0054e9 0%, #2263d5 55%, #4479e4 70%, #a3bbec 90%, #fff 100%);
+  box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.08);
+}
+.xp-tb-close { background: radial-gradient(circle at 90% 90%, #cc4600 0%, #dc6527 55%, #cd7546 70%, #ffccb2 90%, #fff 100%); }
+.xp-tb:hover { filter: brightness(1.18); }
+.xp-tb:active { filter: brightness(0.82); }
+.xp-tb:focus-visible { outline: 1px dotted #fff; outline-offset: 1px; }
+
+/* ---------- Menu bar ---------- */
+
+.xp-menubar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0;
+  padding: 1px 2px;
+  background: var(--xp-face);
+  border-bottom: 1px solid #fff;
+  box-shadow: 0 1px #d8d2bd;
+  flex: none;
+  position: relative;
+  z-index: 35;
+}
+.xp-menu { position: relative; }
+.xp-menu-btn {
+  border: 0;
+  background: none;
+  padding: 2px 7px;
+  font-size: 13px;
+  color: #000;
+}
+.xp-menu-btn:hover, .xp-menu-btn.is-open, .xp-menu-btn:focus-visible { background: var(--xp-select); color: #fff; outline: none; }
+.xp-access { font-size: 0.9em; }
+html[data-lang="en"] .xp-access { display: none; }
+.xp-popup {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 60;
+  min-width: 230px;
+  padding: 2px;
+  background: #fff;
+  border: 1px solid #aca899;
+  box-shadow: 3px 3px 3px -1px rgb(0 0 0 / 0.35);
+  display: grid;
+}
+.xp-item {
+  display: grid;
+  grid-template-columns: 20px 1fr auto;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 14px 3px 2px;
+  border: 0;
+  background: none;
+  text-align: left;
+  font-size: 13px;
+  color: #000;
+  white-space: nowrap;
+}
+.xp-item kbd { font: inherit; padding-left: 24px; }
+.xp-item:hover:not(:disabled), .xp-item:focus-visible { background: var(--xp-select); color: #fff; outline: none; }
+.xp-item:disabled { color: #aca899; cursor: default; }
+.xp-check { text-align: center; font-size: 9px; }
+.xp-sep { height: 1px; margin: 3px 1px; background: #aca899; }
+
+/* ---------- Toolbar and address bar (the regular masthead) ---------- */
+
+html.xp .masthead {
+  padding: 0;
+  gap: 0;
+  background: var(--xp-face);
+  flex: none;
+  position: relative;
+  z-index: 30;
+}
+html.xp .masthead-row {
+  padding: 3px 6px;
+  border-bottom: 1px solid #d8d2bd;
+  box-shadow: 0 1px #fff;
+  justify-content: flex-start;
+  gap: 8px;
+}
+html.xp .nav-row { flex: 1; min-width: 0; display: flex; }
+html.xp .segmented { background: none; padding: 0; gap: 2px; border-radius: 0; }
+html.xp .segmented button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px 4px 6px;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  color: #000;
+  font-size: 13px;
+}
+html.xp .segmented button::before {
+  content: "";
+  width: 22px;
+  height: 22px;
+  flex: none;
+  background: center / contain no-repeat;
+}
+html.xp .segmented button[data-view="timeline"]::before {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 22 22'%3E%3Crect x='1.5' y='3.5' width='19' height='15' rx='1' fill='%23fff' stroke='%236a7fa8'/%3E%3Crect x='3' y='6' width='8' height='2.5' fill='%233a8ee6'/%3E%3Crect x='8' y='10' width='9' height='2.5' fill='%2347b04b'/%3E%3Crect x='5' y='14' width='7' height='2.5' fill='%23f0a030'/%3E%3C/svg%3E");
+}
+html.xp .segmented button[data-view="week"]::before {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 22 22'%3E%3Crect x='1.5' y='2.5' width='19' height='17' rx='1' fill='%23fff' stroke='%236a7fa8'/%3E%3Crect x='1.5' y='2.5' width='19' height='4' fill='%233a6bc7'/%3E%3Cpath d='M5.5 6.5v13M9.5 6.5v13M13.5 6.5v13M17.5 6.5v13M1.5 11h19M1.5 15h19' stroke='%23b8c4dc'/%3E%3Crect x='10' y='11.5' width='3' height='3' fill='%23e3462b'/%3E%3C/svg%3E");
+}
+html.xp .segmented button[data-view="day"]::before {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 22 22'%3E%3Cpath d='M4.5 1.5h10l3 3v16h-13z' fill='%23fff' stroke='%236a7fa8'/%3E%3Crect x='6.5' y='6' width='9' height='2.5' fill='%233a8ee6'/%3E%3Crect x='6.5' y='10' width='9' height='2.5' fill='%2347b04b'/%3E%3Crect x='6.5' y='14' width='9' height='2.5' fill='%23f0a030'/%3E%3C/svg%3E");
+}
+html.xp .segmented button:hover { border-color: #cecece #b7b7b7 #b7b7b7 #cecece; background: linear-gradient(180deg, #fff, #ebe9de); }
+html.xp .segmented button[aria-selected="true"] {
+  font-weight: 400;
+  color: #000;
+  background: #f6f5f0;
+  border-color: #a3a196 #fff #fff #a3a196;
+  box-shadow: inset 1px 1px 2px rgb(0 0 0 / 0.18);
+}
+
+/* XP push buttons */
+html.xp :is(.icon-btn, .text-btn, .date-btn, .settings-chip, .primary-btn, .banner-btn, .report-btn) {
+  border: 1px solid #003c74;
+  border-radius: 3px;
+  background: linear-gradient(180deg, #fff, #ecebe6 86%, #d6d0c5);
+  color: #000;
+  font-weight: 400;
+  box-shadow: none;
+}
+html.xp :is(.icon-btn, .text-btn, .date-btn, .settings-chip, .primary-btn, .banner-btn, .report-btn):hover:not(:disabled) {
+  background: linear-gradient(180deg, #fff, #ecebe6 86%, #d6d0c5);
+  box-shadow: inset -1px 1px #fff0cf, inset 1px 2px #fdd889, inset -2px 2px #fbc761, inset 2px -2px #e5a01a;
+}
+html.xp :is(.icon-btn, .text-btn, .date-btn, .settings-chip, .primary-btn, .banner-btn, .report-btn):active:not(:disabled) {
+  background: linear-gradient(180deg, #cdcac3, #e3e3db 8%, #e5e5de 94%, #f2f2f1);
+  box-shadow: none;
+}
+html.xp :is(.icon-btn, .text-btn, .date-btn, .settings-chip, .primary-btn, .banner-btn):focus-visible {
+  outline: 1px dotted #000;
+  outline-offset: -4px;
+  box-shadow: inset -1px 1px #cee7ff, inset 1px 2px #98b8ea, inset -2px 2px #bcd4f6, inset 1px -1px #89ade4, inset 2px -2px #89ade4;
+}
+html.xp .icon-btn:disabled { opacity: 1; color: #aca899; border-color: #c9c7ba; background: #f5f4ea; }
+html.xp .icon-btn { width: 30px; height: 28px; }
+html.xp .primary-btn { min-width: 75px; justify-content: center; padding: 4px 12px; }
+html.xp .date-btn { padding: 4px 10px; font-size: 13px; gap: 6px; }
+html.xp .date-btn .icon { color: var(--xp-select); }
+
+html.xp .settings-panel { gap: 0; }
+html.xp .controls {
+  align-items: center;
+  gap: 6px;
+  padding: 4px 6px;
+  border-bottom: 1px solid #d8d2bd;
+  box-shadow: 0 1px #fff;
+}
+.xp-addr-label { color: #555; padding-right: 2px; }
+html.xp .picker {
+  height: 24px;
+  gap: 4px;
+  padding: 0 0 0 6px;
+  border: 1px solid var(--xp-field);
+  border-radius: 0;
+  background: #fff;
+}
+html.xp .picker.is-set { border-color: var(--xp-field); }
+html.xp .picker:focus-within { outline: 1px dotted #000; outline-offset: 1px; }
+html.xp .picker-label { color: #555; font-size: 12px; }
+html.xp .picker select {
+  height: 22px;
+  padding: 0 24px 0 4px;
+  font-size: 13px;
+  font-weight: 700;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='9' height='6' viewBox='0 0 9 6'%3E%3Cpath d='M1 1l3.5 3.5L8 1' fill='none' stroke='%234d6185' stroke-width='2'/%3E%3C/svg%3E") right 5px center / 9px 6px no-repeat,
+    linear-gradient(180deg, #e3ebfd, #c2d4fa 50%, #b1c7f8) right 1px center / 17px 18px no-repeat;
+  border-radius: 0;
+}
+html.xp .setup-hint {
+  max-width: none;
+  border-radius: 0;
+  background: #ffffe1;
+  border-bottom: 1px solid #aca899;
+  padding: 4px 6px 4px 10px;
+  font-size: 12.5px;
+}
+html.xp .hint-actions .icon-btn { width: 24px; height: 22px; }
+
+/* Date picker: a month calendar in a plain frame. */
+html.xp .calendar {
+  border-radius: 0;
+  border: 1px solid #000;
+  background: #fff;
+  box-shadow: 3px 3px 4px -1px rgb(0 0 0 / 0.35);
+  padding: 8px;
+}
+html.xp .cal-month h3 {
+  margin: 0 -8px 6px;
+  padding: 3px 8px;
+  background: var(--xp-titlebar);
+  color: #fff;
+  font-family: var(--xp-title-font);
+  font-size: 12.5px;
+  text-shadow: 1px 1px #0f1089;
+}
+html.xp .cal-month:first-of-type h3 { margin-top: 0; }
+html.xp .cal-day { border-radius: 0; font-size: 12.5px; }
+html.xp button.cal-day:hover { background: #dbe6fa; }
+html.xp .cal-day.is-today { color: inherit; box-shadow: inset 0 0 0 1px #d4351c; }
+html.xp .cal-day.is-selected, html.xp .cal-day.is-selected:hover { background: var(--xp-select); color: #fff; }
+html.xp .cal-system { background: none; padding: 0; gap: 4px; }
+html.xp .cal-system button { border: 1px solid #003c74; border-radius: 3px; background: linear-gradient(180deg, #fff, #ecebe6 86%, #d6d0c5); color: #000; }
+html.xp .cal-system button[aria-pressed="true"] { background: #f6f5f0; box-shadow: inset 1px 1px 2px rgb(0 0 0 / 0.25); font-weight: 700; }
+
+/* ---------- Body: task pane and content ---------- */
+
+.xp-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  border: 1px solid;
+  border-color: #aca899 #fff #fff #aca899;
+}
+.xp-taskpane {
+  width: 214px;
+  flex: none;
+  overflow: auto;
+  padding: 12px;
+  display: grid;
+  align-content: start;
+  gap: 14px;
+  background: linear-gradient(180deg, #7ba2e7, #6375d6);
+}
+.xp-tp-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  width: 100%;
+  padding: 3px 3px 3px 11px;
+  border: 0;
+  border-radius: 5px 5px 0 0;
+  background: linear-gradient(90deg, #fff, #c6d3f7);
+  color: var(--xp-link);
+  font-size: 12px;
+  font-weight: 700;
+  text-align: left;
+}
+.xp-tp-head:hover { color: var(--xp-link-hover); }
+.is-special .xp-tp-head { background: linear-gradient(90deg, #0c32b0, #2c5dd8); color: #fff; }
+.is-special .xp-tp-head:hover { color: #c6d6ff; }
+.xp-chev {
+  display: grid;
+  place-items: center;
+  width: 19px;
+  height: 19px;
+  flex: none;
+  border-radius: 50%;
+  background: #fff;
+  border: 1px solid #b8c6ea;
+  color: var(--xp-link);
+  transform: rotate(180deg);
+  transition: transform 0.15s;
+}
+.is-collapsed .xp-chev { transform: none; }
+.xp-tp-body {
+  margin: 0;
+  padding: 10px 10px 10px 12px;
+  list-style: none;
+  background: #d6dff7;
+  border: 1px solid #fff;
+  border-top: 0;
+  display: grid;
+  gap: 7px;
+  font-size: 12px;
+}
+.is-special .xp-tp-body { background: #eff3ff; }
+.is-collapsed .xp-tp-body { display: none; }
+.xp-tp-link {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 0;
+  border: 0;
+  background: none;
+  text-align: left;
+  color: var(--xp-link);
+  line-height: 1.35;
+}
+.xp-tp-link:hover { color: var(--xp-link-hover); text-decoration: underline; }
+.xp-details { gap: 3px; color: #000; }
+.xp-details strong { font-size: 12.5px; }
+.xp-today { color: var(--today); font-weight: 700; }
+.xp-details-sel { color: #444; padding-top: 4px; }
+
+.xp-main {
+  flex: 1;
+  min-width: 0;
+  overflow: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  background: #fff;
+}
+html.xp .view { padding: 12px 16px 16px; max-width: none; }
+html.xp .view-head { margin: 0 0 12px; padding-bottom: 6px; border-bottom: 1px solid; border-image: linear-gradient(90deg, #6d8cdc, rgb(109 140 220 / 0)) 1; }
+html.xp .view-title { font-family: var(--xp-title-font); font-size: 18px; color: #0b2d8f; }
+html.xp .daytype { color: #0b2d8f; border-radius: 2px; }
+html.xp .today-pill { border-radius: 2px; }
+html.xp .badge-changed { border-radius: 2px; }
+
+/* ---------- Timetables inside the window ---------- */
+
+/* Timeline */
+.xp-window .tl-scroll { border: 1px solid var(--xp-field); border-radius: 0; }
+.xp-window .tl-corner { background: linear-gradient(180deg, #fff, #ebeadb); }
+.xp-window .tl-date, .xp-window .tl-period { background: linear-gradient(180deg, #fff, #ebeadb); border-bottom: 1px solid #d6d2c2; }
+.xp-window .tl-date:hover { text-decoration: none; box-shadow: inset 0 -3px #f9b119, var(--hov, 0 0 #0000); }
+.xp-window .tl-date.is-selected { box-shadow: inset 0 -3px var(--xp-select), var(--hov, 0 0 #0000); }
+.xp-window .tl-cell { border-radius: 2px; border: 1px solid hsl(var(--h) calc(45% * var(--s)) 72%); }
+.xp-window .tl-event, .xp-window .tl-gap { border-radius: 0; }
+
+/* Week: a list view with column headers */
+.xp-window .wk-grid { gap: 3px; }
+.xp-window .wk-date {
+  border: 1px solid #d6d2c2;
+  border-bottom: 3px solid #e2dfd0;
+  background: linear-gradient(180deg, #fff, #ebeadb);
+  border-radius: 0;
+}
+.xp-window .wk-date:hover { background: linear-gradient(180deg, #fff, #ebeadb); border-radius: 0; border-bottom-color: #f9b119; }
+.xp-window .wk-date.is-selected { border-bottom-color: var(--xp-select); }
+.xp-window .wk-colbg { margin: -2px; border-radius: 0; }
+.xp-window .wk-colbg.is-selected { background: rgb(49 106 197 / 0.08); box-shadow: inset 0 0 0 1px var(--xp-select); }
+.xp-window .wk-period {
+  padding-top: 0;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(90deg, #fff, #ebeadb);
+  border: 1px solid #d6d2c2;
+  color: #444;
+}
+.xp-window .wk-cell {
+  border-radius: 2px;
+  border: 1px solid hsl(var(--h) calc(45% * var(--s)) 74%);
+  background-image: linear-gradient(180deg, rgb(255 255 255 / 0.55), rgb(255 255 255 / 0));
+}
+.xp-window .wk-cell.is-changed { background-image: repeating-linear-gradient(135deg, transparent 0 6px, color-mix(in srgb, currentColor 9%, transparent) 6px 8px); }
+.xp-window .wk-cell.is-multi { background: #f8f7f2; border-color: #d6d2c2; }
+.xp-window .wk-off { border-radius: 0; border-color: #c9c7ba; background: #f8f7f2; }
+
+/* Day: rows with a numbered box */
+.xp-window .day-list { gap: 6px; max-width: 720px; }
+.xp-window .day-slot {
+  border-radius: 3px;
+  border: 1px solid hsl(var(--h) calc(45% * var(--s)) 72%);
+  background-image: linear-gradient(180deg, rgb(255 255 255 / 0.6), rgb(255 255 255 / 0) 60%);
+  padding: 10px 14px 10px 10px;
+}
+.xp-window .day-slot.is-multi { background: #f8f7f2; border-color: #d6d2c2; }
+.xp-window .day-slot.is-live { outline: 2px solid var(--today); outline-offset: 1px; }
+.xp-window .day-period {
+  align-items: center;
+  justify-content: center;
+  padding: 4px 0;
+  background: #fff;
+  border: 1px solid var(--xp-field);
+  color: #000;
+  align-self: start;
+}
+.xp-window .day-period-num { font-family: var(--xp-title-font); }
+
+/* Events: a group box */
+.xp-window .event-card { background: #fff; border: 1px solid #d0d0bf; border-radius: 4px; }
+.xp-window .event-title { color: #0b2d8f; }
+.xp-window .tl-event { background: #eef2fb; color: #0b2d8f; }
+
+/* ---------- Status bar (the regular footer) ---------- */
+
+html.xp .foot {
+  flex: none;
+  flex-wrap: nowrap;
+  gap: 2px;
+  padding: 2px 16px 1px 2px;
+  font-size: 12px;
+  color: #000;
+  background: var(--xp-face);
+  position: relative;
+  overflow: hidden;
+}
+html.xp .foot::after {
+  /* Size grip */
+  content: "";
+  position: absolute;
+  right: 1px;
+  bottom: 1px;
+  width: 12px;
+  height: 12px;
+  background: radial-gradient(circle, #aca899 1px, transparent 1.4px) 0 0 / 4px 4px;
+  clip-path: polygon(100% 0, 100% 100%, 0 100%);
+}
+html.xp .foot > *, html.xp .foot-meta > * {
+  padding: 1px 6px;
+  border: 1px solid;
+  border-color: #aca899 #fff #fff #aca899;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+html.xp .foot-meta { flex-direction: row; gap: 2px; padding: 0; border: 0; flex: 1; }
+html.xp .foot-meta > :first-child { flex: 1; }
+html.xp .report-btn { border-radius: 0; background: none; padding: 1px 6px; font-size: 12px; color: var(--xp-link); }
+html.xp .report-btn:hover:not(:disabled) { background: none; box-shadow: none; text-decoration: underline; }
+html.xp .report-btn .icon, html.xp .report-text small { display: none; }
+.xp-status-keys { background: none; font-size: 12px; color: #000; }
+.xp-status-keys:hover { color: var(--xp-link); }
+.xp-showcmd { min-width: 4em; text-align: right; font-family: Consolas, "Lucida Console", monospace; }
+.xp-showcmd:empty::before { content: "\00a0"; }
+
+/* ---------- Taskbar: previous and next ---------- */
+
+.xp-taskbar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 40;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  height: calc(var(--xp-taskbar-h) + env(safe-area-inset-bottom));
+  padding: 5px max(6px, env(safe-area-inset-right)) calc(5px + env(safe-area-inset-bottom)) max(6px, env(safe-area-inset-left));
+  background: linear-gradient(180deg, #1f2f86 0, #3165c4 3%, #3682e5 6%, #4490e6 10%, #3883e5 12%, #2b71e0 15%, #2663da 18%, #235bd6 20%, #2258d5 23%, #2157d6 38%, #245ddb 54%, #2562df 86%, #245fdc 89%, #2158d4 92%, #1d4ec0 95%, #1941a5 98%);
+  user-select: none;
+  -webkit-user-select: none;
+}
+.xp-task-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  padding: 0 12px 0 6px;
+  border: 1px solid #1849b5;
+  border-radius: 3px;
+  color: #fff;
+  text-align: left;
+  font-family: var(--xp-font);
+  text-shadow: 0 1px 1px rgb(0 0 0 / 0.4);
+  background: linear-gradient(180deg, #5d9cf7 0%, #3c81f3 10%, #3a7cf0 50%, #3274ea 88%, #2b68de 100%);
+  box-shadow: inset 1px 1px rgb(255 255 255 / 0.35), inset -1px -1px rgb(0 0 0 / 0.2), 1px 1px 1px rgb(0 0 0 / 0.2);
+  -webkit-tap-highlight-color: transparent;
+}
+.xp-task-btn[data-dir="1"] { flex-direction: row-reverse; text-align: right; padding: 0 6px 0 12px; }
+.xp-task-btn:hover:not(:disabled) { background: linear-gradient(180deg, #78b0ff 0%, #53a0ff 10%, #4b95fb 50%, #4189f5 88%, #3a7eea 100%); }
+.xp-task-btn:active:not(:disabled), .xp-task-btn.is-pressed {
+  background: linear-gradient(180deg, #1a4fb8, #1e52b7 50%, #2560cc);
+  box-shadow: inset 1px 1px 3px rgb(0 0 0 / 0.55);
+}
+.xp-task-btn:disabled { cursor: default; color: rgb(255 255 255 / 0.55); background: #3a6fd8; box-shadow: none; }
+.xp-task-btn:disabled .xp-go { filter: grayscale(1) opacity(0.5); }
+.xp-task-btn:focus-visible { outline: 1px dotted #fff; outline-offset: -4px; }
+/* The round green arrows of the explorer's Back and Forward buttons. */
+.xp-go {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  flex: none;
+  border-radius: 50%;
+  border: 1px solid #fff;
+  background: radial-gradient(circle at 35% 28%, #d8f7c8 0%, #6cc85a 32%, #3a9d2c 70%, #2a7d20 100%);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.4);
+}
+.xp-task-text { display: flex; flex-direction: column; min-width: 0; flex: 1; line-height: 1.2; }
+.xp-task-label { font-size: 14px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.xp-task-sub { font-size: 11.5px; opacity: 0.9; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.xp-task-sub:empty { display: none; }
+.xp-task-btn kbd {
+  flex: none;
+  font: 11px var(--xp-font);
+  padding: 0 5px;
+  border: 1px solid rgb(255 255 255 / 0.5);
+  border-radius: 3px;
+  background: rgb(255 255 255 / 0.14);
+  text-shadow: none;
+}
+
+/* ---------- Dialogs, balloon ---------- */
+
+html.xp .sheet {
+  padding: 0 14px 14px;
+  border: 3px solid #0842d3;
+  border-top: 0;
+  border-radius: 8px 8px 0 0;
+  background: var(--xp-face);
+  color: #000;
+  box-shadow: 6px 8px 24px -6px rgb(0 0 0 / 0.55);
+  font-size: 13px;
+}
+html.xp .sheet::backdrop { background: rgb(0 0 0 / 0.25); }
+html.xp .sheet-head {
+  margin: 0 -14px 12px;
+  padding: 0 5px 0 9px;
+  height: 30px;
+  background: var(--xp-titlebar);
+  border-radius: 7px 7px 0 0;
+  color: #fff;
+}
+html.xp .sheet h2 { font-family: var(--xp-title-font); font-size: 13px; text-shadow: 1px 1px #0f1089; }
+html.xp .sheet h3 { color: #0b2d8f; }
+html.xp .sheet p { font-size: 13px; }
+html.xp .sheet-head .icon-btn {
+  width: 21px;
+  height: 21px;
+  border: 1px solid #fff;
+  color: #fff;
+  background: radial-gradient(circle at 90% 90%, #cc4600 0%, #dc6527 55%, #cd7546 70%, #ffccb2 90%, #fff 100%);
+}
+html.xp .sheet-head .icon-btn:hover:not(:disabled) { background: radial-gradient(circle at 90% 90%, #cc4600 0%, #dc6527 55%, #cd7546 70%, #ffccb2 90%, #fff 100%); filter: brightness(1.15); box-shadow: none; }
+html.xp .sheet-head .icon-btn .icon { stroke-width: 3; }
+html.xp .sheet-actions { justify-content: flex-end; }
+
+.xp-help { width: min(480px, calc(100vw - 24px)); }
+.xp-keytable {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  border: 1px solid var(--xp-field);
+  font-size: 12.5px;
+}
+.xp-keytable td { padding: 3px 8px; border-bottom: 1px solid #efeee8; vertical-align: top; }
+.xp-keytable td:first-child { width: 7.5em; white-space: nowrap; }
+.xp-keytable kbd, .xp-item kbd {
+  font-family: Consolas, "Lucida Console", var(--xp-font);
+}
+.xp-keytable kbd {
+  display: inline-block;
+  min-width: 1.6em;
+  padding: 0 4px;
+  border: 1px solid #aca899;
+  border-bottom-width: 2px;
+  border-radius: 3px;
+  background: linear-gradient(180deg, #fff, #ecebe6);
+  text-align: center;
+}
+
+/* Notices appear as a balloon over the taskbar. */
+html.xp .banner {
+  top: auto;
+  left: auto;
+  right: 12px;
+  bottom: calc(var(--xp-taskbar-h) + env(safe-area-inset-bottom) + 12px);
+  transform: none;
+  background: #ffffe1;
+  color: #000;
+  border: 1px solid #000;
+  border-radius: 8px;
+  box-shadow: 3px 3px 4px -1px rgb(0 0 0 / 0.35);
+  font-size: 13px;
+}
+html.xp .banner-close { color: #000; }
+
+/* ---------- Phones: maximized window, bigger taskbar, swipeable week and day ---------- */
+
+@media (max-width: 640px), (hover: none) and (pointer: coarse) {
+  html.xp:root { --xp-taskbar-h: 60px; --wk-col-min: 0px; }
+  .xp-desktop { padding: 0; }
+  .xp-window { max-width: none; border-radius: 0; padding: 0; box-shadow: none; }
+  .xp-titlebar { margin: 0; border-radius: 0; height: calc(30px + env(safe-area-inset-top)); padding-top: env(safe-area-inset-top); }
+  .xp-tb-max { display: none; }
+  .xp-taskpane { display: none; }
+  .xp-body { border: 0; border-top: 1px solid #aca899; }
+  html.xp .foot { display: none; }
+  html.xp .masthead-row { padding: 4px 8px; }
+  html.xp .nav-row { flex: 1; }
+  html.xp .segmented { display: flex; width: 100%; }
+  html.xp .segmented button { flex: 1; justify-content: center; padding: 4px 4px; font-size: 13px; }
+  html.xp .segmented button::before { width: 18px; height: 18px; }
+  /* The view heading already shows the date, so the date button keeps only its icon. */
+  html.xp .date-btn { padding: 4px 8px; height: 32px; }
+  html.xp .date-btn span { display: none; }
+  html.xp .settings-row { padding: 4px 8px; border-bottom: 1px solid #d8d2bd; box-shadow: 0 1px #fff; }
+  html.xp .settings-chip:not([hidden]) { height: 32px; font-size: 13px; font-weight: 700; }
+  html.xp .settings-row .shortcut-btn { width: 34px; height: 32px; }
+  html.xp .controls { padding: 6px 8px; }
+  html.xp .picker { height: 32px; }
+  html.xp .picker select { height: 30px; font-size: 15px; }
+  html.xp .calendar { top: 120px; }
+  html.xp .view { padding: 10px 10px 16px; }
+  html.xp .view-title { font-size: 16px; }
+  .xp-task-btn kbd { display: none; }
+  .xp-task-label { font-size: 15px; }
+  .xp-go { width: 34px; height: 34px; }
+  html.xp .banner { left: 12px; right: 12px; max-width: none; width: auto; }
+
+  /* Week and day: one swipe moves one step (js/xp.js). The browser keeps vertical scrolling
+     and pinch zoom; the week fits the screen width so there is nothing to scroll sideways. */
+  html.xp .xp-main .view-week, html.xp .xp-main .view-day { touch-action: pan-y pinch-zoom; }
+  html.xp .xp-main .wk-scroll { overflow: visible; }
+  html.xp .xp-main .view.is-swiping { will-change: transform; }
+  html.xp .xp-main .view.is-swiping * { user-select: none; -webkit-user-select: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .xp-chev { transition: none; }
+}
+
+/* ---------- Printing from the browser menu ---------- */
+
+@media print {
+  html.xp body { height: auto; overflow: visible; background: #fff; }
+  html.xp :is(.xp-titlebar, .xp-menubar, .xp-taskpane, .xp-taskbar, .masthead, .foot) { display: none !important; }
+  html.xp .xp-desktop { position: static; padding: 0; }
+  html.xp .xp-window { height: auto; padding: 0; box-shadow: none; background: #fff; }
+  html.xp .xp-body { border: 0; }
+  html.xp .xp-main { overflow: visible; }
+}
+
+/* ---------- ?vimium=1: the page scrolls instead of the window's content area ---------- */
+
+/* Vimium scrolls only the page and vertical scroll areas, so the window grows with its content
+   and fills the screen width, and the timeline scrolls the page sideways (html.tl-page-scroll,
+   as without the XP theme). */
+html.xp.xp-flow body {
+  height: auto;
+  min-height: 100vh;
+  overflow: visible;
+  padding-bottom: calc(var(--xp-taskbar-h) + env(safe-area-inset-bottom));
+  background-attachment: fixed;
+}
+html.xp-flow .xp-desktop { position: static; padding: 0; display: block; }
+html.xp-flow .xp-window {
+  max-width: none;
+  height: auto;
+  min-height: calc(100vh - var(--xp-taskbar-h) - env(safe-area-inset-bottom));
+  padding: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+html.xp-flow .xp-titlebar { margin: 0; border-radius: 0; }
+html.xp-flow .xp-tb-max { display: none; }
+html.xp-flow .xp-main { overflow: visible; }
+html.xp-flow .xp-body { border-left: 0; border-right: 0; }
+html.xp.tl-page-scroll :is(.xp-titlebar, .xp-menubar, .masthead, .foot) { position: sticky; left: 0; width: var(--vw, 100vw); }
+html.xp.tl-page-scroll :is(.xp-titlebar, .xp-menubar) { z-index: 21; }
+html.xp.tl-page-scroll .view-timeline .view-head { left: 16px; width: calc(var(--vw, 100vw) - 32px); }
+/* The subject column sticks to the left edge of the screen, so the task pane steps aside. */
+html.xp.tl-page-scroll .xp-taskpane { display: none; }
+html.xp.tl-page-scroll .xp-main { background: #fff; }
