@@ -7,7 +7,7 @@
 //
 // Usage:
 //   node scripts/compare-sources.mjs [--gemini <file.html>] [--legrs <js file or URL>] [--all]
-// Defaults: comparison/個人時間割表.html and https://legrs.github.io/pre_tokuhen/js.js.
+// Defaults: comparison/個人時間割表.html and legrs's last hand-typed dat.js (commit c2dd43e).
 // --all also prints the cells where every source agrees.
 
 import { readFileSync } from "node:fs";
@@ -175,7 +175,7 @@ try {
   console.error(`Skipping Gemini: ${e.message}`);
 }
 try {
-  sources.push(fromLegrs(await readText(opt("legrs", "https://legrs.github.io/pre_tokuhen/js.js"))));
+  sources.push(fromLegrs(await readText(opt("legrs", "https://raw.githubusercontent.com/legrs/pre_tokuhen/c2dd43e80752d52c1d24a9604651d439e3137803/dat.js"))));
 } catch (e) {
   console.error(`Skipping legrs: ${e.message}`);
 }

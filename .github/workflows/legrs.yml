@@ -1,0 +1,107 @@
+name: Send timetable to legrs/pre_tokuhen
+
+# Writes data/timetable.json as dat.js into the fork igarinpiano/pre_tokuhen and opens (or
+# updates) a pull request to legrs/pre_tokuhen. Runs when the data changes on main, or by hand
+# from the Actions tab (Run workflow).
+#
+# Needs the repository secret LEGRS_PR_TOKEN: a classic personal access token with the
+# public_repo scope (it pushes to the fork and opens the pull request on legrs's repository).
+
+on:
+  push:
+    branches: [main]
+    paths: ["data/timetable.json", "scripts/export-legrs.mjs", ".github/workflows/legrs.yml"]
+  workflow_dispatch:
+
+concurrency:
+  group: legrs
+  cancel-in-progress: false
+
+env:
+  UPSTREAM: legrs/pre_tokuhen
+  UPSTREAM_BRANCH: master
+  FORK: igarinpiano/pre_tokuhen
+  # The fork's branch the pull request comes from.
+  FORK_BRANCH: claude/dreamy-keller-6czn0m
+
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: node scripts/validate.mjs
+
+      - name: Write dat.js into the fork and open the pull request
+        env:
+          GH_TOKEN: ${{ secrets.LEGRS_PR_TOKEN }}
+          SOURCE_SHA: ${{ github.sha }}
+          SOURCE_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          if [ -z "$GH_TOKEN" ]; then
+            echo "::error::Add the repository secret LEGRS_PR_TOKEN (classic token, public_repo scope)."
+            exit 1
+          fi
+          owner="${FORK%%/*}"
+          src="$PWD"
+
+          # Keep the fork's default branch level with legrs's (fast-forward only).
+          gh repo sync "$FORK" --branch "$UPSTREAM_BRANCH" \
+            || echo "::warning::Couldn't fast-forward $FORK $UPSTREAM_BRANCH; carrying on."
+
+          git clone --quiet "https://x-access-token:${GH_TOKEN}@github.com/${FORK}.git" "$RUNNER_TEMP/fork"
+          cd "$RUNNER_TEMP/fork"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
+          git remote add upstream "https://github.com/${UPSTREAM}.git"
+          git fetch --quiet upstream "+refs/heads/${UPSTREAM_BRANCH}:refs/remotes/upstream/${UPSTREAM_BRANCH}"
+          base="upstream/${UPSTREAM_BRANCH}"
+
+          if git fetch --quiet origin "+refs/heads/${FORK_BRANCH}:refs/remotes/origin/${FORK_BRANCH}" 2>/dev/null \
+             && ! git merge-base --is-ancestor "origin/${FORK_BRANCH}" "$base"; then
+            # The branch has work legrs hasn't merged yet: bring it up to date with his
+            # branch (his side wins on conflicts; dat.js is rewritten below anyway).
+            git checkout --quiet -B "$FORK_BRANCH" "origin/${FORK_BRANCH}"
+            git merge --quiet --no-edit -X theirs "$base"
+          else
+            # No branch yet, or everything on it is merged: start again from his branch.
+            git checkout --quiet -B "$FORK_BRANCH" "$base"
+          fi
+
+          node "$src/scripts/export-legrs.mjs" dat.js
+          git add dat.js
+          if ! git diff --cached --quiet; then
+            git commit --quiet -m "Update timetable data from ${SOURCE_REPO}@${SOURCE_SHA::7}"
+          fi
+          git push --quiet --force-with-lease origin "HEAD:refs/heads/${FORK_BRANCH}"
+
+          if git diff --quiet "$base" HEAD; then
+            echo "dat.js already matches ${UPSTREAM}; no pull request needed." | tee -a "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
+          pr=$(gh pr list --repo "$UPSTREAM" --state open --limit 100 \
+                 --json url,headRefName,headRepositoryOwner \
+                 --jq ".[] | select(.headRefName == \"${FORK_BRANCH}\" and .headRepositoryOwner.login == \"${owner}\") | .url")
+          if [ -n "$pr" ]; then
+            echo "Updated the open pull request: $pr" | tee -a "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
+          files=$(git diff --name-only "$base" HEAD | sed 's/^/- `/; s/$/`/')
+          cat > "$RUNNER_TEMP/body.md" <<EOF
+          時間割データの更新です（[${SOURCE_REPO}](https://github.com/${SOURCE_REPO}) の \`data/timetable.json\` から自動生成）。
+
+          変更されるファイル:
+          ${files}
+
+          \`dat.js\` は [scripts/export-legrs.mjs](https://github.com/${SOURCE_REPO}/blob/main/scripts/export-legrs.mjs) が書き出しています。
+          直接編集すると次の更新で上書きされるので、間違いは [${SOURCE_REPO} の issue](https://github.com/${SOURCE_REPO}/issues/new?template=report.yml) で教えてください。
+          データが変わるたびに、このプルリクエストが更新されます（開いていなければ新しく作られます）。
+          EOF
+          url=$(gh pr create --repo "$UPSTREAM" --base "$UPSTREAM_BRANCH" --head "${owner}:${FORK_BRANCH}" \
+                  --title "時間割データを更新" --body-file "$RUNNER_TEMP/body.md")
+          echo "Opened $url" | tee -a "$GITHUB_STEP_SUMMARY"
