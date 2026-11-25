@@ -95,7 +95,8 @@ independently, to catch reading mistakes:
 node scripts/compare-sources.mjs
 ```
 
-By default it reads `comparison/個人時間割表.html` and `https://legrs.github.io/pre_tokuhen/js.js`
+By default it reads `comparison/個人時間割表.html` and legrs's last hand-typed `dat.js` (pinned to
+a commit, since his site now gets its data from this repository)
 (`--gemini <file>` and `--legrs <file or URL>` point it elsewhere; `--all` lists agreeing cells
 too). Every source is reduced to one subject per date, period block and class (120-minute
 blocks) or division (55-minute blocks), and every cell where the sources disagree is listed
@@ -109,6 +110,24 @@ It also runs two checks that need only one source:
 - 55-minute cells repeat weekly, so a cell that differs from the same weekday, period and
   division in other weeks is listed (the shaded changes in the final week show up here and are
   marked as such).
+
+### Sending the data to legrs/pre_tokuhen
+
+[legrs.github.io/pre_tokuhen](https://legrs.github.io/pre_tokuhen/) reads the same timetable from
+its `dat.js`. Whenever `data/timetable.json` changes on `main` (or from **Actions → Send timetable
+to legrs/pre_tokuhen → Run workflow**), [`.github/workflows/legrs.yml`](.github/workflows/legrs.yml):
+
+1. writes the data in his format with `scripts/export-legrs.mjs`,
+2. commits it as `dat.js` to the fork [igarinpiano/pre_tokuhen](https://github.com/igarinpiano/pre_tokuhen)
+   (branch `claude/dreamy-keller-6czn0m`, set by `FORK_BRANCH`), kept up to date with his `master`,
+3. opens a pull request to legrs/pre_tokuhen, or updates the one that's already open.
+
+It needs the repository secret `LEGRS_PR_TOKEN`: a classic personal access token with the
+`public_repo` scope. To see the output locally:
+
+```
+node scripts/export-legrs.mjs dat.js
+```
 
 ## Where the text lives
 
