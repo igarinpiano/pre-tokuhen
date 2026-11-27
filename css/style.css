@@ -439,7 +439,9 @@ button.cal-day:hover { background: var(--surface); }
   font-weight: 700;
   line-height: 1.6;
 }
-.is-changed { background-image: repeating-linear-gradient(135deg, transparent 0 6px, color-mix(in srgb, currentColor 9%, transparent) 6px 8px); }
+/* Stripes are drawn in opaque colours (the cell's own --fill), never with transparent stops:
+   iPhone Safari prints transparent gradient stops as black, which blacked out changed cells. */
+.is-changed { background-image: repeating-linear-gradient(135deg, var(--fill) 0 6px, color-mix(in srgb, currentColor 9%, var(--fill)) 6px 8px); }
 
 /* Timeline */
 .tl-scroll {
@@ -541,7 +543,8 @@ html.tl-page-scroll .tl-grid {
   white-space: nowrap;
   overflow: hidden;
   color: hsl(var(--h) calc(55% * var(--s)) var(--text-l));
-  background-color: hsl(var(--h) calc(var(--tint-s) * var(--s) + 6%) calc(var(--tint-l) - 4%));
+  --fill: hsl(var(--h) calc(var(--tint-s) * var(--s) + 6%) calc(var(--tint-l) - 4%));
+  background-color: var(--fill);
 }
 .tl-cell.is-changed { outline: 2px solid var(--today); outline-offset: -2px; }
 
@@ -608,7 +611,8 @@ html.tl-page-scroll .tl-grid {
   align-items: flex-start;
   gap: 2px;
   color: hsl(var(--h) calc(55% * var(--s)) var(--text-l));
-  background-color: hsl(var(--h) calc(var(--tint-s) * var(--s)) var(--tint-l));
+  --fill: hsl(var(--h) calc(var(--tint-s) * var(--s)) var(--tint-l));
+  background-color: var(--fill);
   min-width: 0;
 }
 .wk-cell .subj-name { font-size: 14px; line-height: 1.3; max-width: 100%; overflow-wrap: anywhere; hyphens: auto; }
@@ -643,7 +647,8 @@ html.tl-page-scroll .tl-grid {
   min-height: 70px;
   border-radius: 14px;
   color: hsl(var(--h) calc(55% * var(--s)) var(--text-l));
-  background-color: hsl(var(--h) calc(var(--tint-s) * var(--s)) var(--tint-l));
+  --fill: hsl(var(--h) calc(var(--tint-s) * var(--s)) var(--tint-l));
+  background-color: var(--fill);
 }
 .day-slot.is-double { min-height: 118px; }
 .day-slot.is-multi { background: var(--surface); color: var(--ink); }
