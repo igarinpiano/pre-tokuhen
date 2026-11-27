@@ -473,7 +473,7 @@ html.xp .badge-changed { border-radius: 2px; }
   border: 1px solid hsl(var(--h) calc(45% * var(--s)) 74%);
   background-image: linear-gradient(180deg, rgb(255 255 255 / 0.55), rgb(255 255 255 / 0));
 }
-.xp-window .wk-cell.is-changed { background-image: repeating-linear-gradient(135deg, transparent 0 6px, color-mix(in srgb, currentColor 9%, transparent) 6px 8px); }
+.xp-window .wk-cell.is-changed { background-image: repeating-linear-gradient(135deg, var(--fill) 0 6px, color-mix(in srgb, currentColor 9%, var(--fill)) 6px 8px); }
 .xp-window .wk-cell.is-multi { background: #f8f7f2; border-color: #d6d2c2; }
 .xp-window .wk-off { border-radius: 0; border-color: #c9c7ba; background: #f8f7f2; }
 
