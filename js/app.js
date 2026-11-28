@@ -324,8 +324,8 @@ function renderShortcutButton() {
 function selectionSummary() {
   const s = state.sel;
   const parts = [];
-  if (s.class) parts.push(`${t.classLabel} ${s.class}`);
-  if (s.division) parts.push(`${t.divisionLabel} ${s.division.toUpperCase()}`);
+  if (s.class) parts.push(t.classSummary(s.class));
+  if (s.division) parts.push(t.divisionSummary(s.division.toUpperCase()));
   for (const id of model.electivesFor(s.division)) {
     if (s.electives[id]) parts.push(`${model.abbr(id)} ${model.name(s.electives[id])}`);
   }
@@ -417,7 +417,7 @@ function printRange(view, from, to) {
     }
   }
   // Week view in landscape. Printouts are always on white (see the print styles).
-  $("print-page-style").textContent = `@page { size: A4 ${view === "week" ? "landscape" : "portrait"}; margin: 10mm; }`;
+  $("print-page-style").textContent = `@page { size: A4 ${view === "week" ? "landscape" : "portrait"}; margin: 15mm; }`;
   document.documentElement.classList.add("printing");
   // iPhone Safari can report the print as finished before it has drawn the preview, so the
   // printout is only cleared once the user is back on the page and touches it (or prints again).

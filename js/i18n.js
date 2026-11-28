@@ -7,6 +7,9 @@ const STRINGS = {
     divisionLabel: "講座",
     classOption: (c) => c,
     divisionOption: (d) => d,
+    // The chosen class and division in print headers and the XP details pane.
+    classSummary: (c) => `${c} 組`,
+    divisionSummary: (d) => `${d} 講座`,
     unset: "未選択",
     allClasses: "全組",
     allDivisions: "全講座",
@@ -108,6 +111,8 @@ const STRINGS = {
     divisionLabel: "Division",
     classOption: (c) => c,
     divisionOption: (d) => d,
+    classSummary: (c) => `Class ${c}`,
+    divisionSummary: (d) => `Division ${d}`,
     unset: "Not set",
     allClasses: "All classes",
     allDivisions: "All divisions",
