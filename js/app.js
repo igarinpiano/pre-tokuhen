@@ -324,8 +324,8 @@ function renderShortcutButton() {
 function selectionSummary() {
   const s = state.sel;
   const parts = [];
-  if (s.class) parts.push(`${t.classLabel} ${s.class}`);
-  if (s.division) parts.push(`${t.divisionLabel} ${s.division.toUpperCase()}`);
+  if (s.class) parts.push(t.classSummary(s.class));
+  if (s.division) parts.push(t.divisionSummary(s.division.toUpperCase()));
   for (const id of model.electivesFor(s.division)) {
     if (s.electives[id]) parts.push(`${model.abbr(id)} ${model.name(s.electives[id])}`);
   }
