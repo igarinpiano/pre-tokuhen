@@ -417,7 +417,7 @@ function printRange(view, from, to) {
     }
   }
   // Week view in landscape. Printouts are always on white (see the print styles).
-  $("print-page-style").textContent = `@page { size: A4 ${view === "week" ? "landscape" : "portrait"}; margin: 15mm; }`;
+  $("print-page-style").textContent = `@page { size: A4 ${view === "week" ? "landscape" : "portrait"}; margin: 10mm; }`;
   document.documentElement.classList.add("printing");
   // iPhone Safari can report the print as finished before it has drawn the preview, so the
   // printout is only cleared once the user is back on the page and touches it (or prints again).
